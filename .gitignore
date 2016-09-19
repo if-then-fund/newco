@@ -1,0 +1,5 @@
+/.env
+/local
+/siteapp/static/vendor/
+
+__pycache__

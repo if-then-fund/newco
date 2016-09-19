@@ -1,0 +1,344 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load site_utils %}
+
+{% block title %}
+Do The Thing
+{% endblock %}
+
+{% block head %}
+
+<style>
+h2 {
+  margin-top: 1.5em;
+  margin-bottom: 15px;
+  font-size: 22px;
+}
+
+#amount-wrapper {
+  max-width: 13em;
+  border: 1px solid #AAA;
+  margin: 1em 0;
+}
+  #amount-wrapper .input-group-addon, #amount-wrapper input {
+    border: none;
+    font-size: 24px;
+    text-align: right;
+  }
+
+.responsive-side-panel {
+  font-size: 90%;
+  color: #331;
+}
+@media screen and (min-width: 768px) {
+  .responsive-side-panel {
+    margin-left: 2em;
+    border-left: 1px solid #775;
+    padding: .5em 0 .5em 1em;
+  }
+}
+@media screen and (max-width: 767px) {
+  .responsive-side-panel {
+    margin: 1em 0;
+    border: 1px solid #775;
+    padding: .5em;
+  }
+}
+</style>
+{% endblock %}
+
+{% block body %}
+  <h1>Do The Thing</h1>
+
+  <p>Please.</p>
+
+  <form id="contribution-form" onsubmit="do_submit(); return false;" autocomplete="on">
+    <input type="hidden" name="ref_code" value="{{request.GET.utm_campaign}}"/>
+
+    <h2>Amount</h2>
+
+    <div id="amount-wrapper" class="input-group">
+      <div class="input-group-addon">$</div>
+      <input id="amount" name="amount" class="form-control" type="text" value="{{suggested_amount}}" pattern="^([0-9]+(,[0-9]{3})*)?(\.[0-9]{0,2})?$" title="Contribution Amount" onkeyup="amount_validation()" onchange="amount_validation()">
+    </div>
+
+    <div id="contributor">
+      <h2>About you</h2>
+
+      <div class="row">
+        <div class="col-sm-5 col-sm-push-7 col-md-6 col-md-push-6">
+          <div class="responsive-side-panel">
+              <p><strong>Federal law restricts who can make campaign contributions:</strong></p>
+              <p>You must be either a U.S. citizen or lawfully admitted permanent resident (i.e., a green card holder). You cannot be employed <i>directly</i> by the federal government as a contractor. You must make this contribution with your own funds, which were not provided to you by any other person or entity. You must use your own personal credit card, and not a corporate or business card or a card issued to another person.</p>
+              <p><strong>and requires us to collect and share information about you.</strong></p>
+              <p>The Federal Election Commission requires all contributors to federal campaigns to provide all of the information we ask for in this section, and in many cases it becomes a part of the public record and searchable in online databases.</p>
+          </div>
+        </div>
+        <div class="col-sm-7 col-sm-pull-5 col-md-6 col-md-pull-6">
+          <div id="contributor-email" class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" class="form-control" id="email" name="email" placeholder="yourname@youremail.com" required>
+          </div> <!-- contributor-email -->
+
+          <label>Name and Address</label>
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-group">
+                {# <label for="nameFirst">First Name</label> #}
+                <input type="text" class="form-control" id="nameFirst" name="nameFirst" placeholder="first name" required>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-group">
+                {# <label for="nameLast">Last Name</label> #}
+                <input type="text" class="form-control" id="nameLast" name="nameLast" placeholder="last name" required>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            {# <label for="address">Address</label> #}
+            <input type="text" class="form-control" id="address" name="address" placeholder="123 Your Location St." required>
+          </div>
+          <div class="row">
+            <div class="col-sm-5 col-md-6">
+              <div class="form-group">
+                {# <label for="city">City</label> #}
+                <input type="text" class="form-control" id="city" name="city" placeholder="Everytown" required>
+              </div>
+            </div>
+            <div class="col-sm-3 col-md-2">
+              <div class="form-group">
+                {# <label for="state">State</label> #}
+                <input type="text" class="form-control" id="state" name="state" placeholder="state" required>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                {# <label for="zip">ZIP</label> #}
+                <input type="text" class="form-control" id="zip" name="zip" placeholder="zip code" maxlength="10" required>
+              </div>
+            </div>
+          </div> <!-- /row -->
+          <div class="row">
+            <div class="col-sm-6 notEmployedTarget">
+              <div class="form-group">
+                <label for="occupation">Occupation</label>
+                <input type="text" class="form-control" id="occupation" name="occupation">
+              </div>
+            </div>
+            <div class="col-sm-6 notEmployedTarget">
+              <div class="form-group">
+                <label for="employer">Employer</label>
+                <input type="text" class="form-control" id="employer" name="employer">
+              </div>
+            </div>
+          </div>
+          <label for="notEmployed" style="font-weight: normal">
+            <input id="notEmployed" type="checkbox" onchange="$('.notEmployedTarget').toggle(!$(this).prop('checked')); if ($(this).prop('checked')) { $('#occupation').val('not employed'); $('#employer').val('none'); }">
+            Retired or not employed?
+          </label>
+        </div> <!-- /col -->
+      </div> <!-- /row -->
+
+    </div> <!-- /pledge-contributor -->
+
+      <div id="pledge-payment">
+        <h2>Payment information</h2>
+
+        <div class="row">
+          <div class="col-sm-5 col-sm-push-7 col-md-6 col-md-push-6">
+            <div class="responsive-side-panel">
+                <p><strong>How your contribution will be distributed:</strong></p>
+                <p>...</p>
+            </div>
+          </div>
+          <div class="col-sm-7 col-sm-pull-5 col-md-6 col-md-pull-6">
+            <div class="row" style="max-width: 20em">
+              <div class="col-sm-12 form-group">
+                <label for="ccNum">Credit Card Number</label>
+                <input type="text" class="form-control" id="ccNum" name="ccNum" autocomplete="cc-number" placeholder="0000 0000 0000 0000" required>
+              </div>
+              <div class="col-sm-6 form-group">
+                <label for="ccExp">Expiration</label></td>
+                <input type="text" class="form-control" id="ccExp" name="ccExp" placeholder="MM/YYYY" required>
+              </div>
+              <div class="col-sm-6 form-group">
+                <label for="ccCVV">CVV</label>
+                <input type="text" class="form-control" id="ccCVV" name="ccCVV" required autocomplete="off">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p style="margin: 1.5em 0">By clicking next, you agree that you have reviewed the contributor requirements above and our <a href="/terms" target="_blank">terms of use</a>.</p>
+      </div> <!-- /pledge-payment -->
+
+      <button class="btn btn-success">Submit</button>
+  </form>
+
+  <table id="line-items" class="table" style="margin-top: 2em; width: auto;">
+    <thead>
+      <tr><th>Recipient</th> <th>Amount</th></tr>
+    </thead>
+    <tbody>
+      {% for recip in all_recipients %}
+        <tr data-recipient-id="{{recip.id}}">
+          <td>{{recip.name}}</td>
+          <td class="amount">...</td>
+        </tr>
+      {% endfor %}
+      <tr data-recipient-id="__fees__">
+        <td>Fees</td>
+        <td class="amount">...</td>
+      </tr>
+    </tbody>
+  </table>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static "vendor/jquery.payment.js" %}"> </script>
+  <script src="{% static "vendor/mailcheck.min.js" %}"> </script>
+
+  <script>
+  $(function() {
+    // Initialize fields.
+    $('#ccNum').payment('formatCardNumber');
+    $('#ccExp').payment('formatCardExpiry');
+    $('#ccCVV').payment('formatCardCVC');
+
+    // Demo values.
+    if (window.location.hash == "#demo") {
+      $('#email').val("demo+" + parseInt(1000+Math.random()*5000) + "@{{SITE_DOMAIN}}")
+      $('#nameFirst').val('{{random_user_info.nameFirst|escapejs}}')
+      $('#nameLast').val('{{random_user_info.nameLast|escapejs}}')
+      $('#address').val('{{random_user_info.address|escapejs}}')
+      $('#city').val('{{random_user_info.city|escapejs}}')
+      $('#state').val('{{random_user_info.state|escapejs}}')
+      $('#zip').val('{{random_user_info.zip|escapejs}}')
+      $('#occupation').val('{{random_user_info.occupation|escapejs}}')
+      $('#employer').val('{{random_user_info.employer|escapejs}}')
+      $('#ccNum').val('4111111111111111')
+      $('#ccExp').val('1/2020')
+      $('#ccCVV').val('000')
+    }
+  })
+
+  function get_amount() {
+    // Check that the number input looks numeric in its entirety. parseFloat
+    // ignores non-parsable content at the end. English localization is
+    // hard-coded in the regular expression and in the handling of commas.
+    var amt = $('#amount').val();
+    var re = RegExp($('#amount').attr('pattern'))
+    if (!re.test(amt)) return null;
+
+    // Strip thousands-commas, which parseFloat doesn't like.
+    amt = amt.replace(/,/, '');
+
+    // Attempt to parse. parseFloat returns NaN if the expression cannot
+    // be parsed. To be sure we'll also check that it doesn't return +/-Inf
+    // (all three conditions are handled by isFinite).
+    amt = parseFloat(amt);
+    if (!isFinite(amt)) return null;
+
+    // Check that it has a whole number of cents.
+    if (amt != Math.round(amt*100)/100) return null;
+
+    // Check bounds.
+    if (amt < {{min_contrib}} || amt > {{max_contrib}})
+      return null;
+
+    return amt;
+  }
+
+  function amount_validation() {
+    var valid = true;
+    if (get_amount() == null) {
+      $('#amount-wrapper .input-group-addon').css({ color: '#666' })
+      $('#amount').popover({ content: "Must be between {{min_contrib|currency}} and {{max_contrib|currency}}." }).popover('show');
+      valid = false;
+    } else {
+      $('#amount-wrapper .input-group-addon').css({ color: 'green' })
+      $('#amount').popover('destroy');
+    }
+    return valid;
+  }
+
+  function payment_validation() {
+    $('#ccNum').popover('destroy');
+    $('#ccExp').popover('destroy');
+    $('#ccCVV').popover('destroy');
+
+    if (!$.payment.validateCardNumber($('#ccNum').val())) {
+      $('#ccNum').popover({ content: "Enter a credit card number." }).popover('show');
+      return false;
+    }
+
+    var exp = $('#ccExp').payment('cardExpiryVal');
+    if (!$.payment.validateCardExpiry(exp.month, exp.year)) {
+      $('#ccExp').popover({ content: "Enter a valid expiration date." }).popover('show');
+      return false;
+    }
+
+    if (!$.payment.validateCardCVC($('#ccCVV').val())) {
+      $('#ccCVV').popover({ content: "Enter your card verification code, often found on the back side of the card." }).popover('show');
+      return false;
+    }
+
+    return true;
+  }
+
+  function do_submit() {
+    // Validation.
+    if (!amount_validation())
+      return null;
+    if (!payment_validation())
+      return null;
+
+    // Valid. Submit! Collect all of the form fields.
+    var form_params = $('#contribution-form').serializeArray();
+    var data = { };
+    for (var i = 0; i < form_params.length; i++)
+      data[form_params[i].name] = form_params[i].value;
+
+    ajax_with_indicator({
+      // disable/enable controls while AJAX is happening
+      controls: $('#contribution-form input'),
+
+      // request
+      url: '{{request.path|escapejs}}',
+      method: "POST",
+      data: data,
+
+      // response
+      keep_indicator_forever: true, /* on success we redirect */
+      success: function(res) {
+        $('#line-items tbody tr').hide();
+        for (var i = 0; i < res.line_items.length; i++) {
+          var line_item = res.line_items[i];
+          if (line_item[0].type == "fees") line_item[0].id = "__fees__";
+          var node = $('#line-items tr[data-recipient-id=' + line_item[0].id + "]");
+          node.show();
+          node.find("td.amount").text(line_item[1]);
+        }
+        return;
+
+        // res.status == "error" is handled by ajax_with_indicator
+        window.location = "/thank-you";
+      }
+    })
+
+    // Instrumentation.
+
+    // These might not execute if the AJAX request above is quick and
+    // the reload begins before the mixpanel AJAX request is sent...
+
+    // Mixpanel.
+    //mixpanel.track("Pledge Submitted", { 'trigger': {{trigger.id}} });
+
+  }
+
+
+  </script>
+
+
+{% endblock %}
