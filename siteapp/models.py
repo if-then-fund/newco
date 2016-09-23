@@ -7,8 +7,6 @@ import decimal
 alg = {
   "min_contrib": decimal.Decimal("1.00"), # dollars
   "max_contrib": decimal.Decimal("250000.00"), # dollars
-  "fees_percent": decimal.Decimal("0.09"), # 9%
-  "fees_fixed": decimal.Decimal("0.20"), # 20 cents
   "limits": {
     "candidate": decimal.Decimal("2700"), # dollars, per election
     "pac": decimal.Decimal("5000"), # dollars, per year
@@ -52,8 +50,7 @@ class Campaign(models.Model):
 
   # Totals.
   total_contributors = models.IntegerField(default=0, help_text="A running total of the number of individuals who made a contribution through this Campaign.")
-  total_contributions_with_fees = models.DecimalField(max_digits=6, decimal_places=2, default=0, help_text="A running total of contributions made through this Campaign, before fees are removed.")
-  total_contributions_without_fees = models.DecimalField(max_digits=6, decimal_places=2, default=0, help_text="A running total of contributions made through this Campaign, after fees are removed.")
+  total_contributions = models.DecimalField(max_digits=6, decimal_places=2, default=0, help_text="A running total of contributions made through this Campaign.")
 
   # Additional data.
   extra = JSONField(blank=True, help_text="Additional information stored with this object.")
@@ -128,15 +125,13 @@ class Contribution(models.Model):
     # For a new object, increment the Campaign's counters.
     if is_new:
       self.campaign.total_contributors = models.F('total_contributors') + 1
-      self.campaign.total_contributions_with_fees = models.F('total_contributions_with_fees') + self.amount
-      self.campaign.total_contributions_without_fees = models.F('total_contributions_without_fees') + (self.amount-self.fees)
-      self.campaign.save(update_fields=['total_contributors', 'total_contributions_with_fees', 'total_contributions_without_fees'])
+      self.campaign.total_contributions = models.F('total_contributions') + self.amount
+      self.campaign.save(update_fields=['total_contributors', 'total_contributions'])
 
   def delete(self):
     self.campaign.total_contributors = models.F('total_contributors') - 1
-    self.campaign.total_contributions_with_fees = models.F('total_contributions_with_fees') - self.amount
-    self.campaign.total_contributions_without_fees = models.F('total_contributions_without_fees') - (self.amount-self.fees)
-    self.campaign.save(update_fields=['total_contributors', 'total_contributions_with_fees', 'total_contributions_without_fees'])
+    self.campaign.total_contributions = models.F('total_contributions') - self.amount
+    self.campaign.save(update_fields=['total_contributors', 'total_contributions'])
     super(Contribution, self).delete()  
 
   # STATIC

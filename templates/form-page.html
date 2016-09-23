@@ -187,10 +187,6 @@ h2 {
           <td class="amount">...</td>
         </tr>
       {% endfor %}
-      <tr data-recipient-id="__fees__">
-        <td>Fees</td>
-        <td class="amount">...</td>
-      </tr>
     </tbody>
   </table>
 {% endblock %}
@@ -315,7 +311,6 @@ h2 {
         $('#line-items tbody tr').hide();
         for (var i = 0; i < res.line_items.length; i++) {
           var line_item = res.line_items[i];
-          if (line_item[0].type == "fees") line_item[0].id = "__fees__";
           var node = $('#line-items tr[data-recipient-id=' + line_item[0].id + "]");
           node.show();
           node.find("td.amount").text(line_item[1]);

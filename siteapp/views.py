@@ -59,16 +59,14 @@ class ContributionFormView(View):
 def compute_minimum_contribution(recipients, overflow_recipients):
   # The minimum contribution is one cent to the receipient with the
   # lowest points, then proportional amounts to the remaining recipients,
-  # plus fees. It must be at least min_contrib.
+  # rounded up. It must be at least min_contrib.
   min_points = min(Decimal(recip["points"]) for recip in recipients)
   min_contribution = max(
     alg['min_contrib'],
     round_to_cents(
       sum(
         round_to_cents(Decimal(recip["points"])/min_points*Decimal("0.01"), ROUND_DOWN)
-        for recip in recipients)
-      * (1 + alg['fees_percent'])
-      + alg['fees_fixed'],
+        for recip in recipients),
       ROUND_UP)
     )
 
@@ -85,17 +83,15 @@ def get_recipient_limit(recipient):
 
 def compute_maximum_contribution(recipients, overflow_recipients):
   # The maximum contribution is the sum of the contribution limits
-  # for each recipient and all overflow recipients, plus fees. It
-  # must not exceed 'max_contrib'.
+  # for each recipient and all overflow recipients. It must not
+  # exceed 'max_contrib'.
   maximum_contribution = min(
     alg['max_contrib'],
     round_to_cents(
     (
        sum(get_recipient_limit(recip) for recip in recipients)
      + sum(get_recipient_limit(recip) for recip in overflow_recipients)
-    )
-    * (1 + alg['fees_percent'])
-    + alg['fees_fixed'],
+    ),
     ROUND_DOWN))
 
   # sanity check that line items are computable
@@ -125,19 +121,8 @@ def contribution_limits_for_display(min_contrib, max_contrib):
 
 
 def compute_line_items(recipients, overflow_recipients, amount):
-  line_items = []
-
-  # Add a line item for the fees, working backward from the total.
-  # i.e. total = fees_fixed + fees_percent * total_contributions
-  # But we have the total so we work backward.
-  fees = amount - (amount - alg['fees_fixed']) / (1 + alg['fees_percent'])
-  fees = round_to_cents(fees, ROUND_HALF_EVEN)
-  if amount < fees:
-    raise ValueError("The amount is less than the minimum fee.")
-  line_items.append(({ "type": "fees", "name": "Fees" }, fees))
-
-  # Split the amount after fees to the recipients.
-  line_items.extend(split_contribution_to_recipients(recipients, amount-fees))
+  # Split the amount to the recipients.
+  line_items = split_contribution_to_recipients(recipients, amount)
 
   # Send the rest to overflow recipients.
   overflow_recipients = list(overflow_recipients) # clone
@@ -161,7 +146,7 @@ def compute_line_items(recipients, overflow_recipients, amount):
 
   # Sort.
   def recipient_sort_key(recip):
-    recip_sort_order = ["candidate", "pac", "c4", "fees"]
+    recip_sort_order = ["candidate", "pac", "c4"]
     return (recip_sort_order.index(recip["type"]), recip["name"])
   line_items.sort(key = lambda line_item : recipient_sort_key(line_item[0]))
 
