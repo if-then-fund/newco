@@ -62,7 +62,11 @@ class ContributionFormView(View):
 
     # Compute line-items.
     random_seed = request.POST['rstate']
-    line_items = compute_line_items(self.campaign.recipients, amount, random_seed)
+    disabled_recipients = request.POST['disabled-recipients'].split(";");
+    line_items = compute_line_items(
+      [r for r in self.campaign.recipients if r["id"] not in disabled_recipients],
+      amount,
+      random_seed)
 
     if request.POST.get("method") != "execute":
       # Format the amounts for display.
