@@ -52,7 +52,7 @@ h2 {
 
   <p>Please.</p>
 
-  <form id="contribution-form" onsubmit="do_submit(); return false;" autocomplete="on">
+  <form id="contribution-form" onsubmit="return false;" autocomplete="on">
     <input type="hidden" name="rstate" value="{{rstate}}"/>
     <input type="hidden" name="ref_code" value="{{request.GET.utm_campaign}}"/>
 
@@ -174,22 +174,41 @@ h2 {
         <p style="margin: 1.5em 0">By clicking next, you agree that you have reviewed the contributor requirements above and our <a href="/terms" target="_blank">terms of use</a>.</p>
       </div> <!-- /pledge-payment -->
 
-      <button class="btn btn-success">Submit</button>
+      <button class="btn btn-success" onclick="do_submit();">Submit</button>
+
+      <button class="btn btn-default" onclick="show_contribution_details_modal();">See Details</button>
   </form>
 
-  <table id="line-items" class="table" style="margin-top: 2em; width: auto;">
-    <thead>
-      <tr><th>Recipient</th> <th>Amount</th></tr>
-    </thead>
-    <tbody>
-      {% for recip in recipients %}
-        <tr data-recipient-id="{{recip.id}}">
-          <td>{{recip.name}}</td>
-          <td class="amount">...</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div id="contribution_details_modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="contribution_details_modal_title" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <h4 class="modal-title" id="contribution_details_modal_title">
+            Contribution Details
+          </h4>
+        </div>
+        <div class="modal-body">
+          <table id="line-items" class="table" style="margin-top: 2em; width: auto;">
+            <thead>
+              <tr><th>Recipient</th> <th>Amount</th></tr>
+            </thead>
+            <tbody>
+              {% for recip in recipients %}
+                <tr data-recipient-id="{{recip.id}}">
+                  <td>{{recip.name}}</td>
+                  <td class="amount">...</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>  
 {% endblock %}
 
 {% block scripts %}
@@ -284,14 +303,8 @@ h2 {
     return true;
   }
 
-  function do_submit() {
-    // Validation.
-    if (!amount_validation())
-      return null;
-    if (!payment_validation())
-      return null;
-
-    // Valid. Submit! Collect all of the form fields.
+  function collect_form_data() {
+    // Collect all of the form fields.
     var form_params = $('#contribution-form').serializeArray();
     var data = { };
     for (var i = 0; i < form_params.length; i++)
@@ -300,10 +313,55 @@ h2 {
     // Replace some fields with parsed values.
     data['amount'] = get_amount();
 
+    // Return.
+    return data;    
+  }
+
+  function show_contribution_details_modal() {
+    // Validation.
+    if (!amount_validation())
+      return null;
+
+    // Submit.
+    data = collect_form_data();
+    ajax_with_indicator({
+      // disable/enable controls while AJAX is happening
+      controls: $('#contribution-form button'),
+
+      // request
+      url: '{{request.path|escapejs}}',
+      method: "POST",
+      data: data,
+
+      // response
+      success: function(res) {
+        $('#line-items tbody tr').hide();
+        for (var i = 0; i < res.line_items.length; i++) {
+          var line_item = res.line_items[i];
+          var node = $('#line-items tr[data-recipient-id=' + line_item[0].id + "]");
+          node.show();
+          node.find("td.amount").text(line_item[1]);
+        }
+        $('#contribution_details_modal').modal();
+      }
+    })
+  }
+
+  function do_submit() {
+    // Validation.
+    if (!amount_validation())
+      return null;
+    if (!payment_validation())
+      return null;
+
+    // Prepare to submit.
+    data = collect_form_data();
+    data['method'] = 'execute';
+
     // Submit!
     ajax_with_indicator({
       // disable/enable controls while AJAX is happening
-      controls: $('#contribution-form input'),
+      controls: $('#contribution-form input, #contribution-form button'),
 
       // request
       url: '{{request.path|escapejs}}',
@@ -313,15 +371,6 @@ h2 {
       // response
       keep_indicator_forever: true, /* on success we redirect */
       success: function(res) {
-        $('#line-items tbody tr').hide();
-        for (var i = 0; i < res.line_items.length; i++) {
-          var line_item = res.line_items[i];
-          var node = $('#line-items tr[data-recipient-id=' + line_item[0].id + "]");
-          node.show();
-          node.find("td.amount").text(line_item[1]);
-        }
-        return;
-
         // res.status == "error" is handled by ajax_with_indicator
         window.location = "/thank-you";
       }
