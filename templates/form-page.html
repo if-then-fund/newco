@@ -297,6 +297,10 @@ h2 {
     for (var i = 0; i < form_params.length; i++)
       data[form_params[i].name] = form_params[i].value;
 
+    // Replace some fields with parsed values.
+    data['amount'] = get_amount();
+
+    // Submit!
     ajax_with_indicator({
       // disable/enable controls while AJAX is happening
       controls: $('#contribution-form input'),
