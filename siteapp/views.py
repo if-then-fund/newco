@@ -5,6 +5,8 @@ from django.views import View
 from .models import alg, Campaign, Contribution
 from .templatetags.site_utils import currency
 
+from email_validator import validate_email
+
 import random
 from decimal import Decimal, ROUND_DOWN, ROUND_UP, ROUND_HALF_EVEN
 
@@ -68,9 +70,33 @@ class ContributionFormView(View):
       # Return the line items.
       return JsonResponse({ 'line_items': line_items })
 
+    # Create a Contribution record.
+
+    try:
+      contribution = Contribution.objects.create(
+        campaign=self.campaign,
+        contributor={
+          "email": validate_email(request.POST["email"])["email"], # validate & normalize
+          "nameFirst": request.POST["nameFirst"],
+          "nameLast": request.POST["nameLast"],
+          "address": request.POST["address"],
+          "city": request.POST["city"],
+          "state": request.POST["state"],
+          "zip": request.POST["zip"],
+          "occupation": request.POST["occupation"],
+          "employer": request.POST["employer"],
+        },
+        amount=amount,
+        cclastfour=request.POST["ccNum"][-4:],
+        recipients=line_items,
+        ref_code=request.POST["ref_code"],
+      )
+    except ValueError as e:
+      return JsonResponse({'status': 'error', 'message': str(e)})
+
     # Execute the transaction.
 
-    return JsonResponse({'status': 'error', 'message': 'Hello!'})
+    return JsonResponse({'status': 'ok'})
 
 def compute_minimum_contribution(recipients):
   # The minimum contribution is one cent to the receipient with the
