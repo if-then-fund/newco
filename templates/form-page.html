@@ -53,6 +53,7 @@ h2 {
   <p>Please.</p>
 
   <form id="contribution-form" onsubmit="do_submit(); return false;" autocomplete="on">
+    <input type="hidden" name="rstate" value="{{rstate}}"/>
     <input type="hidden" name="ref_code" value="{{request.GET.utm_campaign}}"/>
 
     <h2>Amount</h2>

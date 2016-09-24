@@ -5,6 +5,7 @@ from django.views import View
 from .models import alg, Campaign, Contribution
 from .templatetags.site_utils import currency
 
+import random
 from decimal import Decimal, ROUND_DOWN, ROUND_UP, ROUND_HALF_EVEN
 
 def recipient_sort_key(recip):
@@ -40,6 +41,7 @@ class ContributionFormView(View):
         "min_contrib": limits[0],
         "max_contrib": limits[1],
         "recipients": sorted(self.campaign.recipients, key=recipient_sort_key),
+        "rstate": random.getrandbits(32), # see split_contribution_to_recipients
         "random_user_info": Contribution.createRandomContributor(),
         "SITE_DOMAIN": "if.then.fund",
       })
@@ -56,7 +58,8 @@ class ContributionFormView(View):
       return JsonResponse({'status': 'error', 'message': 'Invalid contribution amount.'})
 
     # Compute line-items.
-    line_items = compute_line_items(self.campaign.recipients, amount)
+    random_seed = request.POST['rstate']
+    line_items = compute_line_items(self.campaign.recipients, amount, random_seed)
 
     if request.POST.get("method") != "execute":
       # Format the amounts for display.
@@ -127,11 +130,12 @@ def contribution_limits_for_display(min_contrib, max_contrib):
   return (min_contrib, max_contrib)
 
 
-def compute_line_items(recipients, amount):
+def compute_line_items(recipients, amount, random_seed):
   # Split the amount to the recipients that have 'points' fields.
   line_items = split_contribution_to_recipients(
     [recip for recip in recipients if "points" in recip],
-    amount)
+    amount,
+    random_seed)
 
   # Send the rest to overflow recipients.
   overflow_recipients = [recip for recip in recipients if "points" not in recip]
@@ -159,7 +163,7 @@ def compute_line_items(recipients, amount):
   return line_items
 
 
-def split_contribution_to_recipients(recipients, amount):
+def split_contribution_to_recipients(recipients, amount, random_seed):
   # Split a contribution among recipients, with each recipient
   # getting an amount proportional to their "points", until
   # limits are hit.
@@ -189,10 +193,31 @@ def split_contribution_to_recipients(recipients, amount):
       # Set the amount to the limit.
       fixed_line_items.append( (recip, alg["limits"][recip["type"]]) )
     else:
+      # Record the proportional amount.
       free_line_items.append( (recip, recip_amount) )
 
   # If no recipient exceeded limits, return them as-is.
   if len(fixed_line_items) == 0:
+    # Each recipient got a certain number of cents, with rounding down. That
+    # often leaves some cents remaining. Distribute those cents randomly to
+    # any recipients that can take it. But seed the random number generator
+    # with the given value so that the distribution is stable across calls,
+    # so that whatever we show the user as a preview is what sticks at
+    # submission.
+    random.seed(random_seed)
+    remaining_amount = amount - sum(line_item[1] for line_item in free_line_items)
+    # For each cent that needs to be put somewhere...
+    for i in range(int(remaining_amount*100)):
+      # Which recipients have room for another cent?
+      dist_recipients = [i for i, line_item in enumerate(free_line_items)
+        if get_recipient_limit(line_item[0]) > line_item[1]]
+      if len(dist_recipients) == 0:
+        # Everyone is at limits now -- can't distribute any more.
+        break
+      # Pick a random line item and increment it by one cent.
+      line_item_index = random.choice(dist_recipients)
+      free_line_items[line_item_index] = (free_line_items[line_item_index][0], free_line_items[line_item_index][1]+Decimal("0.01"))
+
     return free_line_items
 
   # Since some recipients exceeded limits, re-apportion the overflow
@@ -202,7 +227,7 @@ def split_contribution_to_recipients(recipients, amount):
   # exceed limits.
   remaining_recipients = [line_item[0] for line_item in free_line_items]
   remaining_amount = amount - sum(line_item[1] for line_item in fixed_line_items)
-  return fixed_line_items + split_contribution_to_recipients(remaining_recipients, remaining_amount)
+  return fixed_line_items + split_contribution_to_recipients(remaining_recipients, remaining_amount, random_seed)
 
 def round_to_cents(amount, rounding_type):
   return amount.quantize(Decimal('.01'), rounding=rounding_type)
