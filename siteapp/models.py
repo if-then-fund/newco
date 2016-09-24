@@ -5,7 +5,7 @@ from jsonfield import JSONField
 import decimal
 
 alg = {
-  "min_contrib": decimal.Decimal("1.00"), # dollars
+  "min_contrib": decimal.Decimal("5.00"), # dollars
   "max_contrib": decimal.Decimal("250000.00"), # dollars
   "limits": {
     "candidate": decimal.Decimal("2700"), # dollars, per election
@@ -30,6 +30,9 @@ class Organization(models.Model):
   def __repr__(self):
     return "<Organization(%d, %s)>" % (self.id, repr(self.name))
 
+  def __str__(self):
+    return "#%d %s" % (self.id, repr(self.name))
+
 class Campaign(models.Model):
   """A call to action."""
 
@@ -43,14 +46,14 @@ class Campaign(models.Model):
   headline = models.CharField(max_length=256, help_text="Headline/call-to-action text for the page.")
   subhead = models.TextField(help_text="Short sub-heading text for use in list pages and the meta description tag, in CommonMark format.")
   body = models.TextField(help_text="Body text, in CommonMark format.")
+  suggested_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="The suggested contribution amount -- the initial amount displayed to the user.")
 
   # Recipients.
-  recipients = JSONField(help_text="A list of contribution recipients.")
-  overflow_recipient = models.CharField(max_length=64, help_text="The overflow recipient.")
+  recipients = JSONField(default=[], blank=True, help_text="A list of contribution recipients.")
 
   # Totals.
   total_contributors = models.IntegerField(default=0, help_text="A running total of the number of individuals who made a contribution through this Campaign.")
-  total_contributions = models.DecimalField(max_digits=6, decimal_places=2, default=0, help_text="A running total of contributions made through this Campaign.")
+  total_contributions = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="A running total of contributions made through this Campaign.")
 
   # Additional data.
   extra = JSONField(blank=True, help_text="Additional information stored with this object.")
@@ -60,18 +63,8 @@ class Campaign(models.Model):
   def __repr__(self):
     return "<Campaign(%d, %s, %s)>" % (self.id, repr(self.owner), repr(self.title))
 
-  def get_minimum_contribution(self):
-    # The minimum pledge is one cent to all possible recipients, plus fees,
-    # and at least a fixed minimum pledge.
-    m = decimal.Decimal('0.01') * num_recipients * (1 + alg['fees_percent']) + alg['fees_fixed']
-    m = m.quantize(decimal.Decimal('.01'), rounding=decimal.ROUND_UP)
-    return max(m, alg['min_contrib'])
-
-  def get_suggested_contribution(self):
-    # What's a nice round number to suggest the user pledge?
-    m = decimal.Decimal('100.00')
-    assert m >= self.get_minimum_pledge()
-    return m
+  def __str__(self):
+    return "#%d %s (%s)" % (self.id, self.title, str(self.owner))
 
 class NoMassDeleteManager(models.Manager):
   class CustomQuerySet(models.QuerySet):
@@ -91,13 +84,12 @@ class Contribution(models.Model):
   # Main fields.
   campaign = models.ForeignKey(Campaign, related_name="contributions", on_delete=models.PROTECT, help_text="The Campaign that this Contribution was made for.")
   contributor = JSONField(help_text="Contributor name, address, occupation, and employer.")
-  amount = models.DecimalField(max_digits=6, decimal_places=2, help_text="The contribution amount, in dollars --- the same amount the user's credit card was charged.")
-  fees = models.DecimalField(max_digits=6, decimal_places=2, help_text="The portion of the contribution allocated to fees.")
+  amount = models.DecimalField(max_digits=10, decimal_places=2, help_text="The contribution amount, in dollars --- the same amount the user's credit card was charged.")
   cclastfour = models.CharField(max_length=4, blank=True, null=True, db_index=True, help_text="The last four digits of the user's credit card number, stored & indexed for fast look-up in case we need to find a Contribution from a credit card number.")
 
   # Execution
   recipients = JSONField(help_text="A list of contribution recipients and the amount each recipient is receiving.")
-  transaction = JSONField(help_text="The Democracy Engine transaction record.")
+  transaction = JSONField(blank=True, help_text="The Democracy Engine transaction record.")
 
   # Meta.
   ref_code = models.CharField(max_length=24, blank=True, null=True, db_index=True, help_text="An optional referral code that lead the user to take this action, e.g. from a utm_campaign query string argument.")
@@ -156,5 +148,5 @@ class Contribution(models.Model):
   @property
   def contributor_summary(self):
     return ' '.join(
-      self.contributor[k] for k in ('nameFirst', 'nameLast', 'city', 'state')
+      self.contributor[k] for k in ('email', 'nameFirst', 'nameLast', 'city', 'state')
       )
