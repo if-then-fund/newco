@@ -99,14 +99,16 @@ class ContributionFormView(View):
     return JsonResponse({'status': 'ok'})
 
 def compute_minimum_contribution(recipients):
-  # The minimum contribution is one cent to the receipient with the
+  # The minimum contribution is 50 cents to the receipient with the
   # lowest points, then proportional amounts to the remaining recipients,
-  # rounded up. It must be at least min_contrib.
+  # rounded up. It must be at least min_contrib. We use 50 cents and not
+  # 1 cent because fees will be taken off later, so it shouldn't be too
+  # small.
   min_points = min(Decimal(recip["points"]) for recip in recipients if "points" in recip)
   min_contribution = max(
     alg['min_contrib'],
       sum(
-        round_to_cents(Decimal(recip["points"])/min_points*Decimal("0.01"), ROUND_UP)
+        round_to_cents(Decimal(recip["points"])/min_points*Decimal("0.50"), ROUND_UP)
         for recip in recipients if "points" in recip),
     )
 
