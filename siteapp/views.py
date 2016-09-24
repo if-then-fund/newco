@@ -60,13 +60,31 @@ class ContributionFormView(View):
       # Should be client-side validated.
       return JsonResponse({'status': 'error', 'message': 'Invalid contribution amount.'})
 
-    # Compute line-items.
+
     random_seed = request.POST['rstate']
-    disabled_recipients = request.POST['disabled-recipients'].split(";");
-    line_items = compute_line_items(
-      [r for r in self.campaign.recipients if r["id"] not in disabled_recipients],
-      amount,
-      random_seed)
+    filtered_recipients = [r for r in self.campaign.recipients if r["id"] not in request.POST['disabled-recipients'].split(";")]
+
+    try:
+      if len(filtered_recipients) == 0:
+        raise ValueError("You have removed all recipients.")
+
+      if amount > compute_maximum_contribution(filtered_recipients):
+        # Because recipients can be eliminated, the amount may exceed the
+        # maximum that can be distributed to recipients that are included.
+        raise ValueError("The contribution amount exceeds the amount that can be distributed to the recipients you selected.")
+
+      # Compute line-items.
+      line_items = compute_line_items(filtered_recipients, amount, random_seed)
+    
+    except ValueError as e:
+      if request.POST.get("method") != "execute":
+        # Don't raise an exception here or the user won't be able to
+        # open the modal to edit the disabled recipients.
+        return JsonResponse({ 'line_items': [
+          ( recip, "limits exceeded" ) for recip in filtered_recipients
+        ] })
+      else:
+        return JsonResponse({'status': 'error', 'message': str(e)})
 
     if request.POST.get("method") != "execute":
       # Format the amounts for display.
