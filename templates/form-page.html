@@ -3,12 +3,17 @@
 {% load site_utils %}
 
 {% block title %}
-Do The Thing
+{{campaign.title}}
 {% endblock %}
 
 {% block head %}
 
 <style>
+#subhead {
+  margin-bottom: 15px;
+  font-size: 22px;
+}
+
 h2 {
   margin-top: 1.5em;
   margin-bottom: 15px;
@@ -48,9 +53,11 @@ h2 {
 {% endblock %}
 
 {% block body %}
-  <h1>Do The Thing</h1>
+  <h1>{{campaign.headline}}</h1>
 
-  <p>Please.</p>
+  <div id="subhead">{{campaign.subhead}}</div>
+
+  {{campaign.body|markdown}}
 
   <form id="contribution-form" onsubmit="return false;" autocomplete="on">
     <input type="hidden" name="rstate" value="{{rstate}}"/>

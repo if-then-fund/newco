@@ -4,3 +4,4 @@ requests==2.6.0
 jsonfield
 django-bootstrap3
 email_validator
+commonmark

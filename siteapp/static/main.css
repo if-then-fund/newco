@@ -1,9 +1,14 @@
 @import 'https://fonts.googleapis.com/css?family=Baloo+Bhaina|Raleway:500,800';
 
 body {
-	font-family: 'Raleway', sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 16px;
 }
 
 h1 {
 	font-family: 'Baloo Bhaina', sans-serif;
+}
+
+h2, h3, h4, #subhead, label, input[type=text], th {
+	font-family: 'Raleway', sans-serif;
 }

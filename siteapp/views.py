@@ -39,6 +39,7 @@ class ContributionFormView(View):
       suggested_amount = min(max(self.campaign.suggested_amount, limits[0]), limits[1])
 
       return render(request, 'form-page.html', {
+        "campaign": self.campaign,
         "suggested_amount": int(suggested_amount), # suppress cents
         "min_contrib": limits[0],
         "max_contrib": limits[1],

@@ -4,6 +4,8 @@ from django.template.defaultfilters import stringfilter, strip_tags
 
 import locale
 
+import CommonMark
+
 register = template.Library()
 
 @register.filter(is_safe=True)
@@ -14,3 +16,9 @@ def currency(value, hide_zero_cents=True):
 		# drop cents
 		s = s[:-3]
 	return s
+
+@register.filter(is_safe=True)
+@stringfilter
+def markdown(value):
+	value = CommonMark.commonmark(value)
+	return safestring.mark_safe(value)
