@@ -246,10 +246,35 @@ h2 {
 
   <script>
   $(function() {
-    // Initialize fields.
+    // Initialize field validation.
     $('#ccNum').payment('formatCardNumber');
     $('#ccExp').payment('formatCardExpiry');
     $('#ccCVV').payment('formatCardCVC');
+
+    var _popover_state = { };
+    $('#email').on('blur', function() {
+      console.log(0)
+      function email_popover(text) {
+        var e = $('#email');
+        if (_popover_state.state) e.popover("destroy");
+        if (text) {
+          e.popover({ content: text, placement: 'bottom' }).popover('show');
+          _popover_state.state = true;
+        } else {
+          _popover_state.state = false;
+        }
+      }
+      $('#email').mailcheck({
+        suggested: function(element, suggestion) {
+          // warning
+          email_popover("Are you sure you didn't mean " + suggestion.full + "?");
+        },
+        empty: function(element) {
+          // no warning
+          email_popover(); // clear
+        }
+      });
+    });
 
     // Demo values.
     if (window.location.hash == "#demo") {
