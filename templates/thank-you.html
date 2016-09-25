@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}
+Thank You - {{campaign.title}}
+{% endblock %}
+
+{% block head %}
+{% endblock %}
+
+{% block body %}
+<div class="row">
+<div class="col-sm-push-3 col-sm-6">
+  <h1>{{campaign.headline}}</h1>
+
+  <div id="subhead">Thank you.</div>
+
+  <p>Your donation has been processed. Checks to each of the candidates you have chosen to support will be sent directly to their campaigns.</p>
+
+  <p>Have any thoughts about this service? Contact us at <a class="email" href="mailto:hello@if.then.fund"><i class="fa fa-envelope fa-fw"></i> hello@if.then.fund</a>.</p>
+</div>
+{% endblock %}
+

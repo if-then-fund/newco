@@ -40,7 +40,7 @@ def recipient_sort_key(recip):
 
 class ContributionFormView(View):
   def dispatch(self, request):
-    self.campaign = get_object_or_404(Campaign, id=1, active=True)
+    self.campaign = get_object_or_404(Campaign, id=1, active=True) # also see thank_you
     return super().dispatch(request)
 
   # Render the form page.
@@ -386,3 +386,8 @@ def execute_contribution(contribution, cc_postdata):
 
   contribution.transaction = resp
   contribution.save(update_fields=['transaction'])
+
+def thank_you(request):
+  campaign = get_object_or_404(Campaign, id=1, active=True)
+  return render(request, 'thank-you.html', { "campaign": campaign })
+
