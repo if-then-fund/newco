@@ -9,7 +9,7 @@ from .templatetags.site_utils import currency
 from email_validator import validate_email
 
 import random
-from decimal import Decimal, ROUND_DOWN, ROUND_UP, ROUND_HALF_EVEN
+from decimal import Decimal, ROUND_DOWN, ROUND_UP, ROUND_HALF_EVEN, Context as decimalContext, Inexact as decimalInexact
 
 from .de import DemocracyEngineAPIClient, DummyDemocracyEngineAPIClient, HumanReadableValidationError
 
@@ -71,7 +71,7 @@ class ContributionFormView(View):
     # for the preview.
 
     try:
-      amount = Decimal(request.POST['amount'])
+      amount = Decimal(request.POST['amount']).quantize(Decimal('.01'), context=decimalContext(traps=[decimalInexact]))
     except ValueError:
       # Should be client-side validated.
       return JsonResponse({'status': 'error', 'message': 'Invalid contribution amount.'})
@@ -116,7 +116,6 @@ class ContributionFormView(View):
       return JsonResponse({ 'line_items': line_items })
 
     # Create a Contribution record & save to the database.
-
     try:
       contribution = Contribution.objects.create(
         campaign=self.campaign,
@@ -218,9 +217,8 @@ def contribution_limits_for_display(min_contrib, max_contrib):
   if x < max_contrib/50:
     min_contrib = x
 
-  # Try rounding the maximum down to the nearest number that is 1 and
-  # a bunch of zeroes.
-  x = Decimal("10") ** int(log(max_contrib)/log(10))
+  # Try rounding the maximum down to the nearest $100.
+  x = round_to_cents(max_contrib/100, ROUND_DOWN)*100
   if x > min_contrib*50:
     max_contrib = x
 
