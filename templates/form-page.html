@@ -55,17 +55,15 @@ h2 {
   color: #AAA;
 }
 #line-items tr .glyphicon {
-  color: #666;
+  color: #999;
   cursor: pointer;
+  -webkit-transition: -webkit-transform 1s linear 0;
+  -moz-transition: -moz-transform 1s linear 0;
+  transition: all .75s;
 }
-#line-items tr .glyphicon-plus {
-  display: none;
-}
-  #line-items tr.recipient-disabled .glyphicon-plus {
-    display: inline;
-  }
   #line-items tr.recipient-disabled .glyphicon-remove {
-    display: none;
+    transform: rotate(45deg) scale(.9);
+    color: #F88;
   }
 </style>
 {% endblock %}
@@ -224,8 +222,7 @@ h2 {
                   <td>{{recip.name}}</td>
                   <td class="amount">...</td>
                   <td onclick="toggle_recipient(this);">
-                    <span class="glyphicon glyphicon-plus"> </span>
-                    <span class="glyphicon glyphicon-remove"> </span>
+                    <span class="glyphicon glyphicon-remove" title="Turn this recipient on/off."> </span>
                   </td>
                 </tr>
               {% endfor %}
