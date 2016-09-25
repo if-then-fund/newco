@@ -309,21 +309,28 @@ h2 {
   }
 
   function payment_validation() {
+    // clear validation UI
     $('#ccNum').popover('destroy');
     $('#ccExp').popover('destroy');
     $('#ccCVV').popover('destroy');
 
+    // validate card number
     if (!$.payment.validateCardNumber($('#ccNum').val())) {
       $('#ccNum').popover({ content: "Enter a credit card number." }).popover('show');
       return false;
     }
 
+    // validate card expiration
     var exp = $('#ccExp').payment('cardExpiryVal');
     if (!$.payment.validateCardExpiry(exp.month, exp.year)) {
       $('#ccExp').popover({ content: "Enter a valid expiration date." }).popover('show');
       return false;
     }
 
+    // overwrite field with normalized value -- the backend splits on the slash
+    $('#ccExp').val(exp.month + "/" + exp.year);
+
+    // validate card cvv
     if (!$.payment.validateCardCVC($('#ccCVV').val())) {
       $('#ccCVV').popover({ content: "Enter your card verification code, often found on the back side of the card." }).popover('show');
       return false;

@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.views import View
+from django.conf import settings
 
 from .models import alg, Campaign, Contribution
 from .templatetags.site_utils import currency
@@ -9,6 +10,21 @@ from email_validator import validate_email
 
 import random
 from decimal import Decimal, ROUND_DOWN, ROUND_UP, ROUND_HALF_EVEN
+
+from .de import DemocracyEngineAPIClient, DummyDemocracyEngineAPIClient, HumanReadableValidationError
+
+# Make a singleton instance of the DE client.
+if settings.DE_API:
+  DemocracyEngineAPI = DemocracyEngineAPIClient(
+    settings.DE_API['api_baseurl'],
+    settings.DE_API['account_number'],
+    settings.DE_API['username'],
+    settings.DE_API['password'],
+    None,
+    )
+else:
+  # Testing only, obviously!
+  DemocracyEngineAPI = DummyDemocracyEngineAPIClient()
 
 def recipient_sort_key(recip):
   recip_sort_order = ["candidate", "pac", "c4"]
@@ -62,7 +78,13 @@ class ContributionFormView(View):
 
 
     random_seed = request.POST['rstate']
+
+    # Get the recipients --- the campaign recipients minus any
+    # recipients the user has chosen to suppress.
+
     filtered_recipients = [r for r in self.campaign.recipients if r["id"] not in request.POST['disabled-recipients'].split(";")]
+
+    # Compute the line items.
 
     try:
       if len(filtered_recipients) == 0:
@@ -93,7 +115,7 @@ class ContributionFormView(View):
       # Return the line items.
       return JsonResponse({ 'line_items': line_items })
 
-    # Create a Contribution record.
+    # Create a Contribution record & save to the database.
 
     try:
       contribution = Contribution.objects.create(
@@ -113,11 +135,35 @@ class ContributionFormView(View):
         cclastfour=request.POST["ccNum"][-4:],
         recipients=line_items,
         ref_code=request.POST["ref_code"],
+        extra={
+          "http": { k: request.META.get(k) for k in ('REMOTE_ADDR', 'REQUEST_URI', 'HTTP_USER_AGENT') },
+        }
       )
     except ValueError as e:
       return JsonResponse({'status': 'error', 'message': str(e)})
 
     # Execute the transaction.
+
+    try:
+      execute_contribution(contribution, request.POST)
+    except HumanReadableValidationError as e:
+      # Credit card or other validation failed. Since we can
+      # tell the user what happened, we can delete the Contribution
+      # record.
+      contribution.delete()
+      return JsonResponse({'status': 'error', 'message': str(e)})
+    except Exception as e:
+      # Other errors are unreportable. We'll pretend it went fine
+      # and will sort this out later.
+      contribution.transaction = {
+        "error": {
+          "message": str(e),
+          "type": str(type(e)),
+        }
+      }
+      contribution.save(update_fields=['transaction'])
+
+    # Return OK - the client will redirect to the thanks page.
 
     return JsonResponse({'status': 'ok'})
 
@@ -282,3 +328,63 @@ def split_contribution_to_recipients(recipients, amount, random_seed):
 
 def round_to_cents(amount, rounding_type):
   return amount.quantize(Decimal('.01'), rounding=rounding_type)
+
+def execute_contribution(contribution, cc_postdata):
+  # Create the Democracy Engine API donation request.
+  req = {
+    "donor_first_name": contribution.contributor['nameFirst'],
+    "donor_last_name": contribution.contributor['nameLast'],
+    "donor_address1": contribution.contributor['address'],
+    "donor_city": contribution.contributor['city'],
+    "donor_state": contribution.contributor['state'],
+    "donor_zip": contribution.contributor['zip'],
+
+    # Campaigns like to sign up the user to their mail list. Since
+    # we make lots of microcontributions, don't pass the email
+    # to DE so that DE doesn't pass it on to campaigns.
+    #"donor_email": ...,
+
+    "compliance_employer": contribution.contributor['employer'],
+    "compliance_occupation": contribution.contributor['occupation'],
+
+    "email_opt_in": False,
+    "is_corporate_contribution": False,
+
+    # use contributor info as billing info in the hopes that it might
+    # reduce DE's merchant fees, and maybe we'll get back CC verification
+    # info that might help us with data quality checks in the future?
+    "cc_first_name": contribution.contributor['nameFirst'],
+    "cc_last_name": contribution.contributor['nameLast'],
+    "cc_zip": contribution.contributor['zip'],
+
+    # billing details
+    "cc_number": cc_postdata['ccNum'],
+    "cc_month": cc_postdata['ccExp'].split("/")[0],
+    "cc_year": cc_postdata['ccExp'].split("/")[1],
+    "cc_verification_value": cc_postdata['ccCVV'],
+
+    # line items
+    "line_items": [
+      {
+        "recipient_id": line_item[0]["de_recipient_id"],
+        "amount": DemocracyEngineAPI.format_decimal(line_item[1]),
+      }
+      for line_item in contribution.recipients
+    ],
+
+    # tracking info passed to the recipient campaign
+    "source_code": "newco", 
+    "ref_code": "newco/" + contribution.campaign.title + "/" + str(contribution.ref_code),
+
+    # tracking info private to us
+    "aux_data": {
+        "campaign": contribution.campaign.id,
+        "contribution": contribution.id,
+        "email": contribution.contributor['email'],
+    },
+  }
+
+  resp = DemocracyEngineAPI.create_donation(req)
+
+  contribution.transaction = resp
+  contribution.save(update_fields=['transaction'])

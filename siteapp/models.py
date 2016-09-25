@@ -137,7 +137,7 @@ class Contribution(models.Model):
       "nameLast": random.choice(["Ramm", "Berns", "Wannamaker", "McCarroll", "Bumbrey", "Caudle", "Bridwell", "Pacelli", "Crowley", "Montejano"]),
       "address": "%d %s %s" % (random.randint(10, 200), random.choice(["Fir", "Maple", "Cedar", "Dogwood", "Persimmon", "Beech"]), random.choice([ "St", "Ave", "Ct"])),
       "city": random.choice(["Rudy", "Hookerton", "La Ward", "Marenisco", "Nara Visa"]),
-      "state": random.choice(["NQ", "BL", "PS"]),
+      "state": random.choice(["NY", "CA", "WY", "KS"]),
       "zip": random.randint(10000, 88888),
       "employer": random.choice(["self", "Pear Inc.", "Woogle"]),
       "occupation": random.choice(["retired", "chief executive", "staffer"]),
