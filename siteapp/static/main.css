@@ -3,12 +3,54 @@
 body {
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 16px;
+	background-color: #2b2f33; /* footer color */
+	}
+
+#client-logo {
+	margin: 2em 0;
+	max-width: 150px;
 }
+
+#body-content {
+	background-color: #dddddd;
+	background-image: url('/static/flagbg.png');
+	background-size: 100% auto;
+	background-repeat: no-repeat;
+	background-position: 0 100%;
+	padding-bottom: 300px; /* enough to push the flag down a bit */
+}
+	@media screen and (max-width: 768px) {
+		#body-content {
+			background-image: url('/static/flagbg-xs.png');
+		}
+	}
 
 h1 {
 	font-family: 'Baloo Bhaina', sans-serif;
+	margin-top: .5em;
+	text-align: center;
 }
 
-h2, h3, h4, #subhead, label, input[type=text], th {
+h2, h3, h4, #subhead, #intro, label, input[type=text], th {
 	font-family: 'Raleway', sans-serif;
 }
+
+#subhead {
+	margin: 25px 0;
+	font-size: 22px;
+}
+
+#intro {
+	margin: 25px 0;
+}
+
+footer {
+	background-color: #2b2f33;
+	padding: 2em 0;
+	font-size: 14px;
+	text-align: center;
+}
+	footer a, footer a:hover {
+		margin: 0 1em;
+		color: #999999;
+	}

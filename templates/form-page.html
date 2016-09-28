@@ -9,21 +9,16 @@
 {% block head %}
 
 <style>
-#subhead {
-  margin-bottom: 15px;
-  font-size: 22px;
-}
-
-h2 {
-  margin-top: 1.5em;
-  margin-bottom: 15px;
-  font-size: 22px;
+label {
+  margin-top: .25em;
+  font-weight: normal;
+  font-size: 90%;
 }
 
 #amount-wrapper {
   max-width: 13em;
   border: 1px solid #AAA;
-  margin: 1em 0;
+  margin-right: 1em;
 }
   #amount-wrapper .input-group-addon, #amount-wrapper input {
     border: none;
@@ -31,25 +26,15 @@ h2 {
     text-align: right;
   }
 
-.responsive-side-panel {
+
+#legalspeak {
+  margin: 1.5em 0 2.5em 0;
   font-size: 90%;
-  color: #331;
-}
-@media screen and (min-width: 768px) {
-  .responsive-side-panel {
-    margin-left: 2em;
-    border-left: 1px solid #775;
-    padding: .5em 0 .5em 1em;
-  }
-}
-@media screen and (max-width: 767px) {
-  .responsive-side-panel {
-    margin: 1em 0;
-    border: 1px solid #775;
-    padding: .5em;
-  }
 }
 
+#line-items th {
+  font-weight: normal;
+}
 #line-items tr.recipient-disabled {
   text-decoration: line-through;
   color: #AAA;
@@ -73,32 +58,27 @@ h2 {
 
   <div id="subhead">{{campaign.subhead}}</div>
 
-  {{campaign.body|markdown}}
+  <div id="intro">
+    {{campaign.body|markdown}}
+  </div>
 
   <form id="contribution-form" onsubmit="return false;" autocomplete="on">
     <input type="hidden" name="rstate" value="{{rstate}}"/>
     <input type="hidden" name="ref_code" value="{{request.GET.utm_campaign}}"/>
 
-    <h2>Amount</h2>
+    <label for="amount">Amount</label>
 
-    <div id="amount-wrapper" class="input-group">
-      <div class="input-group-addon">$</div>
-      <input id="amount" name="amount" class="form-control" type="text" value="{{suggested_amount}}" pattern="^([0-9]+(,[0-9]{3})*)?(\.[0-9]{0,2})?$" title="Contribution Amount" onkeyup="amount_validation()" onchange="amount_validation()">
-    </div>
+    <table style="margin-bottom: 1em">
+    <tr><td>
+      <div id="amount-wrapper" class="input-group">
+        <div class="input-group-addon">$</div>
+        <input id="amount" name="amount" class="form-control" type="text" value="{{suggested_amount|currency|cut:"$"}}" pattern="^([0-9]+(,[0-9]{3})*)?(\.[0-9]{0,2})?$" title="Contribution Amount" onkeyup="amount_validation()" onchange="amount_validation()">
+      </div>
+    </td><td>
+      ({{max_contrib|currency}} max)
+    </td></tr></table>
 
     <div id="contributor">
-      <h2>About you</h2>
-
-      <div class="row">
-        <div class="col-sm-5 col-sm-push-7 col-md-6 col-md-push-6">
-          <div class="responsive-side-panel">
-              <p><strong>Federal law restricts who can make campaign contributions:</strong></p>
-              <p>You must be either a U.S. citizen or lawfully admitted permanent resident (i.e., a green card holder). You cannot be employed <i>directly</i> by the federal government as a contractor. You must make this contribution with your own funds, which were not provided to you by any other person or entity. You must use your own personal credit card, and not a corporate or business card or a card issued to another person.</p>
-              <p><strong>and requires us to collect and share information about you.</strong></p>
-              <p>The Federal Election Commission requires all contributors to federal campaigns to provide all of the information we ask for in this section, and in many cases it becomes a part of the public record and searchable in online databases.</p>
-          </div>
-        </div>
-        <div class="col-sm-7 col-sm-pull-5 col-md-6 col-md-pull-6">
           <div id="contributor-email" class="form-group">
             <label for="email">Email Address</label>
             <input type="email" class="form-control" id="email" name="email" placeholder="yourname@youremail.com" required>
@@ -157,26 +137,14 @@ h2 {
               </div>
             </div>
           </div>
-          <label for="notEmployed" style="font-weight: normal">
-            <input id="notEmployed" type="checkbox" onchange="$('.notEmployedTarget').toggle(!$(this).prop('checked')); if ($(this).prop('checked')) { $('#occupation').val('not employed'); $('#employer').val('none'); }">
+          <label for="notEmployed" style="margin: 0 0 1em 0">
+            <input id="notEmployed" type="checkbox" onchange="$('.notEmployedTarget').fadeToggle(!$(this).prop('checked')); if ($(this).prop('checked')) { $('#occupation').val('not employed'); $('#employer').val('none'); }">
             Retired or not employed?
           </label>
-        </div> <!-- /col -->
-      </div> <!-- /row -->
 
     </div> <!-- /pledge-contributor -->
 
       <div id="pledge-payment">
-        <h2>Payment information</h2>
-
-        <div class="row">
-          <div class="col-sm-5 col-sm-push-7 col-md-6 col-md-push-6">
-            <div class="responsive-side-panel">
-                <p><strong>How your contribution will be distributed:</strong></p>
-                <p>...</p>
-            </div>
-          </div>
-          <div class="col-sm-7 col-sm-pull-5 col-md-6 col-md-pull-6">
             <div class="row" style="max-width: 20em">
               <div class="col-sm-12 form-group">
                 <label for="ccNum">Credit Card Number</label>
@@ -191,19 +159,27 @@ h2 {
                 <input type="text" class="form-control" id="ccCVV" name="ccCVV" required autocomplete="off">
               </div>
             </div>
-          </div>
-        </div>
-
-        <p style="margin: 1.5em 0">By clicking next, you agree that you have reviewed the contributor requirements above and our <a href="/terms" target="_blank">terms of use</a>.</p>
       </div> <!-- /pledge-payment -->
 
-      <button class="btn btn-success" onclick="do_submit();">Submit</button>
+      <div id="legalspeak">
+        <p>You must:</p>
+        <ul>
+        <li>Be either a U.S. citizen or lawfully admitted permanent resident (i.e., a green card holder).</li>
+        <li>Not be employed directly by the federal government as a contractor.</li>
+        <li>Make this contribution with your own funds, which were not provided to you by any other person or entity. You must use your own personal credit card, and not a corporate or business card or a card issued to another person.</li>
+        </ul>
+        <p>By clicking next, you agree that you have reviewed the contributor requirements above and our <a href="https://if.then.fund/terms" target="_blank">terms of use</a>.</p>
+      </div>
 
-      <button class="btn btn-default" onclick="show_contribution_details_modal();">See Details</button>
+      <button class="btn btn-primary" onclick="do_submit();" style="display: block; margin: 1em 0; width: 100%; font-size: 18px; font-weight: bold; text-transform: uppercase;">Contribute</button>
+
+      <div style="text-align: center;">
+        <button class="btn btn-default" onclick="show_contribution_details_modal();">See How Your Contribution Will Be Divided</button>
+      </div>
   </form>
 
   <div id="contribution_details_modal" class="modal" tabindex="-1" role="dialog" aria-labelledby="contribution_details_modal_title" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
@@ -212,7 +188,10 @@ h2 {
           </h4>
         </div>
         <div class="modal-body">
-          <table id="line-items" class="table" style="margin-top: 2em; width: auto;">
+          <p>Your contribution will be divided among the candidates below. {{campaign.owner.name}} has pre-set weights to direct more contributions to the candidates that need it most.</p>
+          <p>The amounts below are before credit card and processing fees. You can omit a candidate from your contributions by clicking the <span class="glyphicon glyphicon-remove" alt="ex"> </span>.</p>
+
+          <table id="line-items" class="table" style="margin-top: 1em; width: auto;">
             <thead>
               <tr><th>Recipient</th> <th>Amount</th> <th></th></tr>
             </thead>
@@ -230,11 +209,11 @@ h2 {
           </table>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">OK</button>
         </div>
       </div>
     </div>
-  </div>  
+  </div>
 {% endblock %}
 
 {% block scripts %}

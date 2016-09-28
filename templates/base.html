@@ -22,12 +22,25 @@
     <!--[if gt IE 7]><!-->
 
     <div class="container">
-      {% block body %}
-      {% endblock %}
+      <div class="row" id="body-content">
+        <div class="col-sm-push-1 col-sm-10 col-md-push-2 col-md-8 col-lg-push-3 col-lg-6">
+          <img id="client-logo" src="{% static "newdempac.png" %}" alt="New Democrat Coalition Political Action Committee Logo">
+
+          {% block body %}
+          {% endblock %}
+        </div> <!-- /col -->
+      </div> <!-- /row -->
     </div> <!-- /container -->
 
     <footer>
       <div class="container">
+        <div class="row">
+          <div class="col-sm-push-1 col-sm-10 col-md-push-2 col-md-8 col-lg-push-3 col-lg-6">
+            <a href="https://if.then.fund/about">powered by if.then.fund</a>
+            <a href="https://if.then.fund/terms">terms of service</a>
+            <a href="https://if.then.fund/privacy">privacy</a>
+          </div> <!-- /col -->
+        </div> <!-- /row -->
       </div> <!-- /container -->
     </footer>
 
