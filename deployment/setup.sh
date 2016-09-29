@@ -13,7 +13,7 @@ DOMAIN=newdems-demo.ifthenfund.com
 ############
 
 # Update system packages.
-sudo apt-get update && apt-get upgrade -y
+sudo apt-get update && sudo apt-get upgrade -y
 
 # NGINX
 #######
@@ -37,15 +37,20 @@ cat `pwd`/deployment/nginx.conf | \
 
 # Install TLS cert provisioning tool.
 sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev python3-pip
-sudo pip3 install free_tls_certificates
+sudo -H pip3 install free_tls_certificates
 
-# Generate a self-signed cert so that nginx can start.
-sudo free_tls_certificate $DOMAIN /etc/ssl/local/ssl_certificate.key /etc/ssl/local/ssl_certificate.crt /home/ubuntu/public_html /home/ubuntu/acme-le-account
+# Generate a self-signed cert so that nginx can start. This is probably safe to run even if a good cert
+# is there, but don't bother.
+sudo mkdir -p /etc/ssl/local
+if [ ! -f /etc/ssl/local/ssl_certificate.crt ]; then
+  sudo free_tls_certificate --self-signed $DOMAIN /etc/ssl/local/ssl_certificate.key /etc/ssl/local/ssl_certificate.crt;
+fi
 
 # Restart nginx.
 sudo service nginx restart
 
 # Create cron job to refresh cert.
+mkdir -p /home/ubuntu/public_html # make with non-root ownership
 cat > /tmp/cronjob <<EOF;
 free_tls_certificate $DOMAIN /etc/ssl/local/ssl_certificate.key /etc/ssl/local/ssl_certificate.crt /home/ubuntu/public_html /home/ubuntu/acme-le-account \
 	&& sudo service nginx restart
@@ -53,21 +58,22 @@ EOF
 chmod +x /tmp/cronjob
 sudo mv /tmp/cronjob /etc/cron.daily/letsencrypt
 
-# Procure real TLS certificate now that nginx is up.
-sudo /etc/cron.daily/letsencrypt
+# Procure real TLS certificate now that nginx is up. This is idempotent because
+# if the cert is good a new one won't be provisioned.
+sudo /etc/cron.daily/letsencrypt || /bin/true
 sudo service nginx restart
 
 # WSGI
 ######
 
 # Supervisor, which runs uwsgi
-ln -sf `pwd`/deployment/supervisor.conf /etc/supervisor/conf.d/site.conf
+sudo ln -sf `pwd`/deployment/supervisor.conf /etc/supervisor/conf.d/site.conf
 
 # Place for static assets.
 mkdir -p ../public_html/static
 
 # Install dependencies.
-pip3 install -r requirements.txt
+pip3 install --user -r requirements.txt
 
 # After getting up for the first time-
 

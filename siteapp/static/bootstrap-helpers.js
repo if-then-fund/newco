@@ -115,7 +115,7 @@ function ajax_with_indicator(options) {
       return;
     $('#ajax_loading_indicator div.message').text("Loading..."); //reset
     $('#ajax_loading_indicator').fadeIn()
-  }, 100);
+  }, 500);
   function hide_loading_indicator(success) {
     // Decrement counter of number of parallel pending ajax requests.
     ajax_num_executing_requests--;
