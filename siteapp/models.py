@@ -135,6 +135,7 @@ class Contribution(models.Model):
     return {
       "nameFirst": random.choice(["Jeanie", "Lucrecia", "Marvin", "Jasper", "Carlo", "Millicent", "Zack", "Raul", "Johnny", "Margarette"]),
       "nameLast": random.choice(["Ramm", "Berns", "Wannamaker", "McCarroll", "Bumbrey", "Caudle", "Bridwell", "Pacelli", "Crowley", "Montejano"]),
+      "phone": "(202) 555-1234",
       "address": "%d %s %s" % (random.randint(10, 200), random.choice(["Fir", "Maple", "Cedar", "Dogwood", "Persimmon", "Beech"]), random.choice([ "St", "Ave", "Ct"])),
       "city": random.choice(["Rudy", "La Ward", "Marenisco", "Nara Visa"]),
       "state": random.choice(["NY", "CA", "WY", "KS"]),

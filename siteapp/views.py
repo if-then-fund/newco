@@ -54,12 +54,13 @@ class ContributionFormView(View):
       # make sure it is within limits.
       suggested_amount = min(max(self.campaign.suggested_amount, limits[0]), limits[1])
 
-      return render(request, 'form-page.html', {
+      return render(request, 'index.html', {
         "campaign": self.campaign,
         "suggested_amount": int(suggested_amount), # suppress cents
         "min_contrib": limits[0],
         "max_contrib": limits[1],
         "recipients": sorted(self.campaign.recipients, key=recipient_sort_key),
+        "recipent_index_half_way": len(self.campaign.recipients)//2,
         "rstate": random.getrandbits(32), # see split_contribution_to_recipients
         "random_user_info": Contribution.createRandomContributor(),
         "SITE_DOMAIN": "if.then.fund",
@@ -74,7 +75,7 @@ class ContributionFormView(View):
       amount = Decimal(request.POST['amount']).quantize(Decimal('.01'), context=decimalContext(traps=[decimalInexact]))
     except ValueError:
       # Should be client-side validated.
-      return JsonResponse({'status': 'error', 'message': 'Invalid contribution amount.'})
+      return JsonResponse({'status': 'invalid', 'message': 'Invalid contribution amount.'})
 
 
     random_seed = request.POST['rstate']
@@ -106,7 +107,7 @@ class ContributionFormView(View):
           ( recip, "limits exceeded" ) for recip in filtered_recipients
         ] })
       else:
-        return JsonResponse({'status': 'error', 'message': str(e)})
+        return JsonResponse({'status': 'invalid', 'message': str(e)})
 
     if request.POST.get("method") != "execute":
       # Format the amounts for display.
@@ -123,6 +124,7 @@ class ContributionFormView(View):
           "email": validate_email(request.POST["email"])["email"], # validate & normalize
           "nameFirst": request.POST["nameFirst"],
           "nameLast": request.POST["nameLast"],
+          "phone": request.POST["phone"],
           "address": request.POST["address"],
           "city": request.POST["city"],
           "state": request.POST["state"],
@@ -139,7 +141,7 @@ class ContributionFormView(View):
         }
       )
     except ValueError as e:
-      return JsonResponse({'status': 'error', 'message': str(e)})
+      return JsonResponse({'status': 'invalid', 'message': str(e)})
 
     # Execute the transaction.
 
@@ -150,7 +152,7 @@ class ContributionFormView(View):
       # tell the user what happened, we can delete the Contribution
       # record.
       contribution.delete()
-      return JsonResponse({'status': 'error', 'message': str(e)})
+      return JsonResponse({'status': 'invalid', 'message': str(e)})
     except Exception as e:
       # Other errors are unreportable. We'll pretend it went fine
       # and will sort this out later.
@@ -386,8 +388,4 @@ def execute_contribution(contribution, cc_postdata):
 
   contribution.transaction = resp
   contribution.save(update_fields=['transaction'])
-
-def thank_you(request):
-  campaign = get_object_or_404(Campaign, id=1, active=True)
-  return render(request, 'thank-you.html', { "campaign": campaign })
 

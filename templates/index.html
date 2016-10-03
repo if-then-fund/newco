@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+{% load staticfiles %}
+{% load site_utils %}
+
+{% block title %}
+{{campaign.title}}
+{% endblock %}
+
+{% block head %}
+<style>
+  .primary-btn i { display: none; }
+  .primary-btn[disabled] span { display: none; }
+  .primary-btn[disabled] i { display: inline-block; }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="wrapper wrapper-main">
+    <div class="content form-view">
+        <section class="main">
+            <h1>{{campaign.headline}}</h1>
+            <p class="avenir">{{campaign.body}}</p>
+            <ul class="errors invisible"></ul>
+            <form class="contribution-form" id="contribution-form" onsubmit="return false;" autocomplete="on">
+                <input type="hidden" name="rstate" value="{{rstate}}"/>
+                <input type="hidden" name="ref_code" value="{{request.GET.utm_campaign}}"/>
+
+                <div class="amount-wrapper">
+                    <input type="text" class="form-control mb-2 web-2 amount" placeholder="Amount"
+                      id="amount" name="amount" pattern="^\$? *([0-9]+(,[0-9]{3})*)?(\.[0-9]{0,2})?$" onchange="hide_contribution_details()" onkeypress="hide_contribution_details()">
+                    <span>({{max_contrib|currency}} max)</span>
+                </div>
+                <input type="text" class="form-control mb-2 web-2" placeholder="First"
+                  name="nameFirst" required>
+                <input type="text" class="form-control mb-2 web-2" placeholder="Last"
+                  name="nameLast" required>
+                <input type="email" class="form-control mb-1 web-2" placeholder="Email@email.com"
+                  name="email" required>
+                <input type="tel" class="form-control mb-1 web-2" placeholder="Phone"
+                  name="phone" required>
+                <input type="text" class="form-control mb-1 web-1" placeholder="Address"
+                  name="address" required>
+                <input type="text" class="form-control mb-2 web-2" placeholder="City"
+                  name="city" required>
+                <input type="text" class="form-control mb-2 web-2" placeholder="State"
+                  name="state" required>
+                <input type="text" class="form-control mb-1 web-2 web-last" placeholder="Zip Code"
+                  name="zip" maxlength="10" required>
+                <input type="text" class="form-control mb-2 web-2" placeholder="Employer" name="employer"
+                  required>
+                <input type="text" class="form-control mb-2 web-2" placeholder="Occupation" name="occupation"
+                  required>
+                <input type="text" class="form-control mb-1 web-2 web-last" placeholder="0000 0000 0000 0000"
+                  id="ccNum" name="ccNum" autocomplete="cc-number" required>
+                <input type="text" class="form-control mb-2 web-4" placeholder="1/19"
+                  id="ccExp" name="ccExp" required>
+                <input type="text" class="form-control mb-2 web-4" placeholder="123"
+                  id="ccCVV" name="ccCVV" required autocomplete="off">
+
+                <p class="subtext">By clicking submit, I confirm that the following statements are true and accurate:</p>
+                <ul>
+                    <li>I am not a foreign national who lacks permanent residence in the United States.</li>
+                    <li>I am not a federal government contractor.</li>
+                    <li>This contribution is made from my own funds, and not those of another.</li>
+                    <li>This contribution is not made from the funds of a corporation or labor organzation.</li>
+                    <li>This contribution is made on a personal credit card or debit card for which I have the legal obligation to pay and is not made either on a corporate or business entity card or on the card of another person.</li>
+                    <li>I am at least eighteen years old.</li>
+                </ul>
+                <button class="primary-btn btn" onclick="do_submit()" type="button">
+                  <span>Contribute</span>
+                  <i class="fa-spinner spin"></i>
+                </button>
+            </form>
+            <div class="contribution-overlay" onclick="toggle_contribution_details()">
+                <p>See how your contribution will be divided*</p>
+                <div class="arrow"></div>
+            </div>
+        </section>
+    </div>
+
+    <section id="line-items" class="contributions" style="display: none">
+        <table class="contributions-table">
+            <tbody>
+            {% for recip in recipients %}
+              {% if forloop.counter0 == recipent_index_half_way %}
+                    </tbody>
+                </table>
+                <table class="contributions-table second">
+                    <tbody>
+              {% endif %}
+
+              <tr data-recipient-id="{{recip.id}}">
+                <td>{{recip.name}}</td>
+                <td class="amount">...</td>
+                {% comment %}
+                <td onclick="toggle_recipient(this);">
+                  <span class="glyphicon glyphicon-remove" title="Turn this recipient on/off."> </span>
+                </td>
+                {% endcomment %}
+              </tr>
+            {% endfor %}            
+            </tbody>
+        </table>
+            </tbody>
+        </table>
+        <p class="helper">
+            *Before service fees. If you’ve already reached your maximum
+            contribution for a candidate, you will be refunded by the campaign.
+        </p>
+    </section>
+</div>
+
+<div class="wrapper wrapper-thank-you">
+  <div class="content thank-you" style="display: none;">
+      <h1>Thank you</h1>
+      <p class="avenir"><span class="bold">Your donation has been processed.</span> Checks to each of the candidates you have chosen to support will be sent directly to their campaigns.</p>
+      <p class="avenir">Have any thoughts about this service? Contact us at <a class="mail" href="mailto:ideas@if.then.fund">ideas@if.then.fund</a>.</p>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static "vendor/jquery.payment.js" %}"> </script>
+  <script src="{% static "vendor/mailcheck.min.js" %}"> </script>
+
+  <script>
+  $(function() {
+    // Initialize field validation.
+    $('#ccNum').payment('formatCardNumber');
+    $('#ccExp').payment('formatCardExpiry');
+    $('#ccCVV').payment('formatCardCVC');
+
+    $('input[name=email]').on('blur', function() {
+      $('input[name=email]').mailcheck({
+        suggested: function(element, suggestion) {
+          // warning
+          //alert("Are you sure you didn't mean " + suggestion.full + "?");
+        },
+        empty: function(element) {
+          // no warning
+        }
+      });
+    });
+
+    // Demo values.
+    if (window.location.hash == "#demo") {
+      $('input[name=amount]').val("{{suggested_amount|currency|escapejs}}")
+      $('input[name=email]').val("demo+" + parseInt(1000+Math.random()*5000) + "@{{SITE_DOMAIN}}")
+      $('input[name=nameFirst]').val('{{random_user_info.nameFirst|escapejs}}')
+      $('input[name=nameLast]').val('{{random_user_info.nameLast|escapejs}}')
+      $('input[name=phone]').val('{{random_user_info.phone|escapejs}}')
+      $('input[name=address]').val('{{random_user_info.address|escapejs}}')
+      $('input[name=city]').val('{{random_user_info.city|escapejs}}')
+      $('input[name=state]').val('{{random_user_info.state|escapejs}}')
+      $('input[name=zip]').val('{{random_user_info.zip|escapejs}}')
+      $('input[name=occupation]').val('{{random_user_info.occupation|escapejs}}')
+      $('input[name=employer]').val('{{random_user_info.employer|escapejs}}')
+      $('#ccNum').val('4111111111111111')
+      $('#ccExp').val('1/2020')
+      $('#ccCVV').val('000')
+    }
+  })
+
+  // validaton
+
+  function get_amount() {
+    // Check that the number input looks numeric in its entirety. parseFloat
+    // ignores non-parsable content at the end. English localization is
+    // hard-coded in the regular expression and in the handling of commas.
+    var amt = $('#amount').val();
+    var re = RegExp($('#amount').attr('pattern'))
+    if (!re.test(amt)) return null;
+
+    // Strip leading dollar sign.
+    amt = amt.replace(/^\$ */, '');
+
+    // Strip thousands-commas, which parseFloat doesn't like.
+    amt = amt.replace(/,/g, '');
+
+    // Attempt to parse. parseFloat returns NaN if the expression cannot
+    // be parsed. To be sure we'll also check that it doesn't return +/-Inf
+    // (all three conditions are handled by isFinite).
+    amt = parseFloat(amt);
+    if (!isFinite(amt)) return null;
+
+    // Check that it has a whole number of cents.
+    if (amt != Math.round(amt*100)/100) return null;
+
+    // Check bounds.
+    if (amt < {{min_contrib}} || amt > {{max_contrib}})
+      return null;
+
+    return amt;
+  }
+
+  function amount_validation() {
+    var valid = true;
+    if (get_amount() == null) {
+      add_form_error("Your contribution amount must be between {{min_contrib|currency}} and {{max_contrib|currency}}.");
+      valid = false;
+    }
+    return valid;
+  }
+
+  function payment_validation() {
+    // validate card number
+    if (!$.payment.validateCardNumber($('#ccNum').val())) {
+      add_form_error("Enter a valid credit card number.");
+      return false;
+    }
+
+    // validate card expiration
+    var exp = $('#ccExp').payment('cardExpiryVal');
+    if (!$.payment.validateCardExpiry(exp.month, exp.year)) {
+      add_form_error("Enter a valid expiration date.");
+      return false;
+    }
+
+    // overwrite field with normalized value -- the backend splits on the slash
+    $('#ccExp').val(exp.month + "/" + exp.year);
+
+    // validate card cvv
+    if (!$.payment.validateCardCVC($('#ccCVV').val())) {
+      add_form_error("Enter your card verification code, often found on the back side of the card.");
+      return false;
+    }
+
+    return true;
+  }
+
+  function collect_form_data() {
+    // Collect all of the form fields.
+    var form_params = $('#contribution-form').serializeArray();
+    var data = { };
+    for (var i = 0; i < form_params.length; i++)
+      data[form_params[i].name] = form_params[i].value;
+
+    // Replace some fields with parsed values.
+    data['amount'] = get_amount();
+
+    // Add disabled recipients.
+    data['disabled-recipients'] = [];
+    $('#line-items .recipient-disabled').each(function() {
+      var id = $(this).attr('data-recipient-id');
+      data['disabled-recipients'].push(id);
+    })
+    data['disabled-recipients'] = data['disabled-recipients'].join(";");
+
+    // Return.
+    return data;    
+  }
+
+  {% comment %}
+  function toggle_recipient(elem) {
+    var row = $(elem).parent('tr');
+    row.toggleClass("recipient-disabled");
+    show_contribution_details(true);
+  }
+  {% endcomment %}
+
+  // show the line items
+
+  function toggle_contribution_details() {
+    if (!$('.contributions').is(":visible"))
+      show_contribution_details();
+    else
+      hide_contribution_details()
+  }
+
+  function hide_contribution_details() {
+    $('.contributions').hide();
+    $('.arrow').removeClass("open");
+    $('.wrapper-main').removeClass("open");
+  }
+
+  function show_contribution_details(is_shown_already) {
+    // Validation.
+    if (!amount_validation()) {
+      show_form_error();
+      return null;
+    }
+
+    // Hide some things.
+    hide_contribution_details();
+
+    // Submit.
+    data = collect_form_data();
+    ajax_with_indicator({
+      // disable/enable controls while AJAX is happening
+      controls: $('#contribution-form input, #contribution-form select, #contribution-form button'),
+
+      // request
+      url: '{{request.path|escapejs}}',
+      method: "POST",
+      data: data,
+
+      // response
+      success: function(res) {
+        $('#line-items tr td.amount').text("nothing"); // clear so that line items that disappear are updated
+        for (var i = 0; i < res.line_items.length; i++) {
+          var line_item = res.line_items[i];
+          var node = $('#line-items tr[data-recipient-id=' + line_item[0].id + "]");
+          node.find("td.amount").text(line_item[1]);
+        }
+        if (!is_shown_already) {
+          $('.contributions').show();
+          $('.arrow').addClass("open");
+          $('.wrapper-main').addClass("open");
+        }
+      }
+    })
+  }
+
+  // for submission
+
+  function add_form_error(text) {
+    // add an error bullet
+    $('.errors').append($("<li/>").text(text));
+  }
+
+  function show_form_error() {
+    $('.errors').removeClass("invisible");
+    smooth_scroll_to($('.errors'));
+  }
+
+  function do_submit() {
+    // Validation.
+    $('.errors').text('').addClass("invisible"); // clear
+    if (!amount_validation() || !payment_validation()) {
+      show_form_error();
+      return null;
+    }
+
+    // Prepare to submit.
+    data = collect_form_data();
+    data['method'] = 'execute';
+
+    // Submit!
+    ajax_with_indicator({
+      // disable/enable controls while AJAX is happening
+      controls: $('#contribution-form input, #contribution-form select, #contribution-form button'),
+
+      // request
+      url: '{{request.path|escapejs}}',
+      method: "POST",
+      data: data,
+
+      // response
+      success: function(res) {
+        if (res.status == "invalid") {
+          add_form_error(res.message);
+          show_form_error();
+        } else {
+          $('.contributions').hide();
+          $('.wrapper-main').hide();
+          $('.content.thank-you').show();
+        }
+      }
+    })
+
+    // Instrumentation.
+
+    // These might not execute if the AJAX request above is quick and
+    // the reload begins before the mixpanel AJAX request is sent...
+
+    // Mixpanel.
+    //mixpanel.track("Pledge Submitted", { 'trigger': {{trigger.id}} });
+
+  }
+
+
+  </script>
+
+
+{% endblock %}

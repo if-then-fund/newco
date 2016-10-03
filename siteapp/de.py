@@ -172,6 +172,14 @@ class DummyDemocracyEngineAPIClient(object):
 				"token": token,
 			}
 		elif 'cc_number' in info:
+			for field in ("donor_first_name", "donor_last_name", "donor_address1", "donor_city", "donor_state", "donor_zip",
+				"compliance_employer", "compliance_occupation",
+				"cc_number", "cc_month", "cc_year", "cc_verification_value"):
+				if not info.get(field, "").strip():
+					raise HumanReadableValidationError("Field is empty: %s" % field)
+
+			if info['cc_number'] != '4111111111111111':
+				raise HumanReadableValidationError("Invalid credit card number.")
 			return {
 				"dummy_response": True,
 			}

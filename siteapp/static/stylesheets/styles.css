@@ -1,0 +1,622 @@
+@font-face {
+  font-family: 'FuturaMedium';
+  src: url("../assets/fonts/FuturaLT-Medium.ttf");
+  src: url("../assets/fonts/FuturaLT-Medium.otf");
+  src: url("../assets/fonts/FuturaLT-Medium.woff2");
+  src: url("../assets/fonts/FuturaLT-Medium.woff");
+  font-style: normal;
+  font-weight: 400; }
+@font-face {
+  font-family: 'AvenirMedium';
+  src: url("../assets/fonts/AvenirLT-Medium.ttf") format("truetype"), url("../assets/fonts/AvenirLT-Medium.otf"), url("../assets/fonts/AvenirLT-Medium.woff") format("woff"), url("../assets/fonts/AvenirLT-Medium.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  font-family: FuturaMedium; }
+
+body {
+  background-color: #DDD;
+  min-height: 100vh; }
+
+h1 {
+  text-align: center;
+  color: black;
+  font-family: FuturaMedium; }
+
+p {
+  color: #333;
+  font-family: FuturaMedium; }
+
+.avenir {
+  font-family: AvenirMedium; }
+
+.bold {
+  font-weight: bold; }
+
+.underline {
+  text-decoration: underline; }
+
+@media (min-width: 300px) {
+  h1 {
+    font-size: 24px;
+    margin: 45px 0 15px 0; }
+
+  p,
+  span {
+    font-size: 14px;
+    line-height: 18px;
+    margin-bottom: 23px; } }
+@media (min-width: 600px) and (orientation: portrait) {
+  h1 {
+    font-size: 30px; }
+
+  p,
+  span {
+    font-size: 15px;
+    line-height: 20px;
+    margin-bottom: 23px; } }
+@media (min-width: 769px) {
+  h1 {
+    font-size: 30px; }
+
+  p,
+  span {
+    font-size: 15px;
+    line-height: 20px;
+    margin-bottom: 23px; } }
+.btn {
+  display: block;
+  width: 100%;
+  border: none;
+  color: white;
+  text-transform: uppercase;
+  text-align: center; }
+  .btn:hover {
+    cursor: pointer; }
+  .btn[disabled] {
+    cursor: not-allowed; }
+
+.primary-btn {
+  background-color: #4F8FBD;
+  padding: 18px; }
+  .primary-btn:hover {
+    background-color: #3b759e; }
+  .primary-btn[disabled] {
+    background-color: #3b759e; }
+
+.form-control {
+  margin: 9px 0;
+  height: 30px;
+  background-color: white;
+  border: none;
+  padding: 10px 8px;
+  border-radius: 0;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0; }
+  .form-control.error {
+    background-color: #BF202F;
+    color: white; }
+    .form-control.error::-webkit-input-placeholder {
+      color: white; }
+    .form-control.error:-moz-placeholder {
+      color: white; }
+    .form-control.error::-moz-placeholder {
+      color: white; }
+    .form-control.error:-ms-input-placeholder {
+      color: white; }
+
+@media (min-width: 300px) {
+  .form-control {
+    font-size: 14px;
+    line-height: 14px; }
+    .form-control.amount {
+      height: 32px;
+      font-size: 16px;
+      line-height: 16px; }
+      .form-control.amount::-webkit-input-placeholder {
+        font-size: 16px;
+        line-height: 16px; }
+      .form-control.amount:-moz-placeholder {
+        font-size: 16px;
+        line-height: 16px; }
+      .form-control.amount::-moz-placeholder {
+        font-size: 16px;
+        line-height: 16px; }
+      .form-control.amount:-ms-input-placeholder {
+        font-size: 16px;
+        line-height: 16px; }
+    .form-control.mb-1 {
+      width: 100%; }
+    .form-control.mb-2 {
+      width: calc(50% - 3px); }
+    .form-control::-webkit-input-placeholder {
+      font-size: 14px;
+      line-height: 14px; }
+    .form-control:-moz-placeholder {
+      font-size: 14px;
+      line-height: 14px; }
+    .form-control::-moz-placeholder {
+      font-size: 14px;
+      line-height: 14px; }
+    .form-control:-ms-input-placeholder {
+      font-size: 14px;
+      line-height: 14px; } }
+@media (min-width: 600px) and (orientation: portrait) {
+  .form-control {
+    margin: 12px 0;
+    font-size: 13px;
+    line-height: 13px;
+    height: 39px; }
+    .form-control.amount {
+      height: 40px;
+      font-size: 15px;
+      line-height: 15px; }
+      .form-control.amount::-webkit-input-placeholder {
+        font-size: 15px;
+        line-height: 15px; }
+      .form-control.amount:-moz-placeholder {
+        font-size: 15px;
+        line-height: 15px; }
+      .form-control.amount::-moz-placeholder {
+        font-size: 15px;
+        line-height: 15px; }
+      .form-control.amount:-ms-input-placeholder {
+        font-size: 15px;
+        line-height: 15px; }
+    .form-control.web-1 {
+      width: 100%; }
+    .form-control.web-2 {
+      width: calc(50% - 3px); }
+    .form-control.web-4 {
+      width: calc(25% - 3px); }
+    .form-control.web-last {
+      display: block; }
+    .form-control::-webkit-input-placeholder {
+      font-size: 14px;
+      line-height: 14px; }
+    .form-control:-moz-placeholder {
+      font-size: 14px;
+      line-height: 14px; }
+    .form-control::-moz-placeholder {
+      font-size: 14px;
+      line-height: 14px; }
+    .form-control:-ms-input-placeholder {
+      font-size: 14px;
+      line-height: 14px; } }
+@media (min-width: 769px) {
+  .form-control {
+    margin: 12px 0;
+    font-size: 13px;
+    line-height: 13px;
+    height: 39px; }
+    .form-control.amount {
+      height: 40px;
+      font-size: 15px;
+      line-height: 15px; }
+      .form-control.amount::-webkit-input-placeholder {
+        font-size: 15px;
+        line-height: 15px; }
+      .form-control.amount:-moz-placeholder {
+        font-size: 15px;
+        line-height: 15px; }
+      .form-control.amount::-moz-placeholder {
+        font-size: 15px;
+        line-height: 15px; }
+      .form-control.amount:-ms-input-placeholder {
+        font-size: 15px;
+        line-height: 15px; }
+    .form-control.web-1 {
+      width: 100%; }
+    .form-control.web-2 {
+      width: calc(50% - 3px); }
+    .form-control.web-4 {
+      width: calc(25% - 3px); }
+    .form-control.web-last {
+      display: block; }
+    .form-control::-webkit-input-placeholder {
+      font-size: 14px;
+      line-height: 14px; }
+    .form-control:-moz-placeholder {
+      font-size: 14px;
+      line-height: 14px; }
+    .form-control::-moz-placeholder {
+      font-size: 14px;
+      line-height: 14px; }
+    .form-control:-ms-input-placeholder {
+      font-size: 14px;
+      line-height: 14px; } }
+ul.errors {
+  padding: 15px 15px 15px 25px;
+  margin: 15px 0;
+  border: 1px solid #BF202F; }
+  ul.errors li {
+    padding: 3px 0;
+    color: #BF202F; }
+ul li {
+  color: #333;
+  padding: 6px 0; }
+
+@media (min-width: 300px) {
+  ul {
+    padding-left: 20px; }
+    ul li {
+      font-size: 13px; } }
+@media (min-width: 600px) and (orientation: portrait) {
+  ul {
+    padding-left: 20px; }
+    ul li {
+      font-size: 14px; } }
+@media (min-width: 769px) {
+  ul {
+    padding-left: 20px; }
+    ul li {
+      font-size: 14px; } }
+i {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: inline-block;
+  width: 15px;
+  height: 15px; }
+  i.fa-spinner {
+    background-image: url("../assets/icons/fa-spinner.svg"); }
+  i.spin {
+    -webkit-animation-name: spin;
+    -webkit-animation-duration: 4000ms;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: linear;
+    -webkit-animation-fill-mode: forwards;
+    /* this prevents the animation from restarting! */
+    -moz-animation-duration: 4000ms;
+    -moz-animation-name: spin;
+    -moz-animation-iteration-count: infinite;
+    -moz-animation-timing-function: linear;
+    -moz-animation-fill-mode: forwards;
+    /* this prevents the animation from restarting! */
+    -o-animation-duration: 4000ms;
+    -o-animation-name: spin;
+    -o-animation-iteration-count: infinite;
+    -o-animation-timing-function: linear;
+    -o-animation-fill-mode: forwards;
+    /* this prevents the animation from restarting! */
+    animation-duration: 4000ms;
+    animation-name: spin;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    /* this prevents the animation from restarting! */ }
+@-webkit-keyframes spin {
+  from {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg); }
+  to {
+    -moz-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg); } }
+@-moz-keyframes spin {
+  from {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg); }
+  to {
+    -moz-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg); } }
+@-ms-keyframes spin {
+  from {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg); }
+  to {
+    -moz-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg); } }
+@-o-keyframes spin {
+  from {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg); }
+  to {
+    -moz-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg); } }
+@keyframes spin {
+  from {
+    -moz-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    -ms-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg); }
+  to {
+    -moz-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    -ms-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg); } }
+.invisible {
+  display: none; }
+
+.form-view .subtext {
+  font-weight: bold;
+  color: #333; }
+.form-view .contribution-overlay p {
+  text-align: center;
+  text-transform: uppercase;
+  margin: 0; }
+.form-view .contribution-overlay .arrow {
+  background-image: url("../assets/images/caret-down.png"); }
+  .form-view .contribution-overlay .arrow.open {
+    background-image: url("../assets/images/caret-up.png"); }
+  .form-view .contribution-overlay .arrow:hover {
+    cursor: pointer; }
+
+.contributions .contributions-table {
+  width: 100%;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+  border-collapse: collapse; }
+  .contributions .contributions-table tbody tr:nth-child(odd) {
+    background-color: #f6fcfe; }
+  .contributions .contributions-table tbody tr:nth-child(even) {
+    background-color: #e0eff4; }
+  .contributions .contributions-table td {
+    text-align: center; }
+
+.thank-you .mail {
+  font-weight: bold;
+  text-decoration: underline;
+  color: black;
+  font-size: 14px;
+  line-height: 16px; }
+
+footer {
+  background-color: #2B2F33;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #999;
+  text-align: center; }
+  footer a {
+    color: #999; }
+
+@media (min-width: 300px) {
+  .content {
+    padding: 1px 30px 0 30px;
+    width: 100%; }
+
+  header {
+    padding: 10px 0 0 10px; }
+    header .logo {
+      width: 128px;
+      height: 43px; }
+
+  .form-view {
+    background-image: url("../assets/images/flag-mobile.png");
+    background-position: center 140px;
+    background-size: cover;
+    background-repeat: no-repeat; }
+    .form-view .contribution-form {
+      text-align: justify; }
+    .form-view .contribution-form {
+      padding-bottom: 66px; }
+      .form-view .contribution-form .subtext {
+        font-size: 13px;
+        margin-bottom: 10px; }
+      .form-view .contribution-form .primary-btn {
+        margin-top: 18px;
+        letter-spacing: 2px; }
+    .form-view .contribution-overlay {
+      height: 62px;
+      background-color: rgba(255, 255, 255, 0.9);
+      margin: 0 -30px;
+      padding: 20px 0 13px 0; }
+      .form-view .contribution-overlay p {
+        font-size: 10px;
+        line-height: 20px;
+        letter-spacing: 1px; }
+      .form-view .contribution-overlay .arrow {
+        height: 13px;
+        width: 10px;
+        background-position: center;
+        background-size: contain;
+        background-repeat: no-repeat;
+        margin: 0 auto; }
+
+  .contributions {
+    padding: 12px; }
+    .contributions .contributions-table {
+      text-align: center;
+      color: #666; }
+      .contributions .contributions-table td {
+        font-size: 12px;
+        padding: 0 25px;
+        line-height: 27px; }
+    .contributions .second {
+      display: none; }
+    .contributions .helper {
+      font-size: 9px;
+      line-height: 11px;
+      margin: 8px 0;
+      text-align: center;
+      color: #666; }
+
+  .thank-you {
+    height: calc(100vh - 136px);
+    background-image: url("../assets/images/flag-mobile.png");
+    background-position: bottom center;
+    background-size: cover;
+    background-repeat: no-repeat; }
+
+  footer {
+    padding: 27px 0; }
+    footer span,
+    footer a {
+      font-size: 9px; } }
+@media (min-width: 600px) and (orientation: portrait) {
+  .content {
+    max-width: 760px;
+    margin: 0 auto;
+    width: 100%; }
+
+  .wrapper-main {
+    background-image: url("../assets/images/flag-pad.png");
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    padding-bottom: 430px; }
+    .wrapper-main.open {
+      padding-bottom: 60px; }
+
+  .form-view {
+    background-image: none; }
+    .form-view .contribution-form {
+      text-align: justify; }
+    .form-view .contribution-form {
+      padding-bottom: 0; }
+      .form-view .contribution-form .subtext {
+        font-size: 16px;
+        margin-bottom: 10px; }
+      .form-view .contribution-form .primary-btn {
+        font-size: 14px;
+        letter-spacing: 2px;
+        width: 270px;
+        margin: 23px auto 30px auto; }
+
+  .contributions {
+    max-width: 760px;
+    padding: 18px;
+    margin: 0 auto;
+    width: 100%;
+    background-color: white; }
+    .contributions .second {
+      display: table; }
+    .contributions .contributions-table {
+      width: calc(50% - 7px);
+      float: left;
+      text-align: center;
+      color: #666; }
+      .contributions .contributions-table td {
+        font-size: 12px;
+        padding: 0 25px;
+        line-height: 27px; }
+    .contributions .contributions-table + .contributions-table {
+      margin-left: 13px; }
+    .contributions .helper {
+      clear: both;
+      font-size: 12px;
+      line-height: 14px;
+      padding: 17px 100px 0 100px;
+      text-align: center;
+      color: #666; }
+
+  .wrapper-thank-you {
+    background-image: url("../assets/images/flag-pad.png");
+    background-position: center 70%;
+    background-size: cover;
+    background-repeat: no-repeat; }
+    .wrapper-thank-you .thank-you {
+      background-image: none;
+      height: calc(100vh - 132px); }
+
+  footer {
+    text-align: center; }
+    footer span,
+    footer a {
+      display: inline-block;
+      font-size: 14px;
+      margin: 0 30px; } }
+@media (min-width: 769px) {
+  .content {
+    max-width: 760px;
+    margin: 0 auto;
+    width: 100%; }
+
+  .wrapper-main {
+    background-image: url("../assets/images/flag-pad.png");
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    padding-bottom: 430px; }
+    .wrapper-main.open {
+      padding-bottom: 60px; }
+
+  .form-view {
+    background-image: none; }
+    .form-view .contribution-form {
+      text-align: justify; }
+    .form-view .contribution-form {
+      padding-bottom: 0; }
+      .form-view .contribution-form .subtext {
+        font-size: 16px;
+        margin-bottom: 10px; }
+      .form-view .contribution-form .primary-btn {
+        font-size: 14px;
+        letter-spacing: 2px;
+        width: 270px;
+        margin: 23px auto 30px auto; }
+
+  .contributions {
+    max-width: 760px;
+    padding: 18px;
+    margin: 0 auto;
+    width: 100%;
+    background-color: white; }
+    .contributions .second {
+      display: table; }
+    .contributions .contributions-table {
+      width: calc(50% - 7px);
+      float: left;
+      text-align: center;
+      color: #666; }
+      .contributions .contributions-table td {
+        font-size: 12px;
+        padding: 0 25px;
+        line-height: 27px; }
+    .contributions .contributions-table + .contributions-table {
+      margin-left: 13px; }
+    .contributions .helper {
+      clear: both;
+      font-size: 12px;
+      line-height: 14px;
+      padding: 17px 100px 0 100px;
+      text-align: center;
+      color: #666; }
+
+  .wrapper-thank-you {
+    background-image: url("../assets/images/flag-pad.png");
+    background-position: center 70%;
+    background-size: cover;
+    background-repeat: no-repeat; }
+    .wrapper-thank-you .thank-you {
+      background-image: none;
+      height: calc(100vh - 132px); }
+
+  footer {
+    text-align: center; }
+    footer span,
+    footer a {
+      display: inline-block;
+      font-size: 14px;
+      margin: 0 30px; } }
+
+/*# sourceMappingURL=styles.css.map */
