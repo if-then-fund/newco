@@ -276,10 +276,12 @@
 
   function show_contribution_details(is_shown_already) {
     // Validation.
+    clear_form_errors();
     if (!amount_validation()) {
       show_form_error();
       return null;
     }
+    $('.errors').slideUp(); // no errors
 
     // Hide some things.
     hide_contribution_details();
@@ -314,6 +316,13 @@
 
   // for submission
 
+  function clear_form_errors() {
+    // smoothly clear, but leave the .errors box because if there
+    // are no errors next time the page moves to the Thank You 
+    // state anyway (but see show_contribution_details).
+    $('.errors li').slideUp(function() { $(this).remove(); });
+  }
+
   function add_form_error(text) {
     // add an error bullet
     $('.errors').append($("<li/>").text(text));
@@ -327,7 +336,7 @@
 
   function do_submit() {
     // Validation.
-    $('.errors li').slideUp(function() { $(this).remove(); }); // smoothly clear
+    clear_form_errors();
     if (!amount_validation() || !payment_validation()) {
       show_form_error();
       return null;
