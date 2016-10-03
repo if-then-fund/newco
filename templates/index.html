@@ -20,7 +20,7 @@
         <section class="main">
             <h1>{{campaign.headline}}</h1>
             <p class="avenir">{{campaign.body}}</p>
-            <ul class="errors invisible"></ul>
+            <ul class="errors" style="display: none"></ul>
             <form class="contribution-form" id="contribution-form" onsubmit="return false;" autocomplete="on">
                 <input type="hidden" name="rstate" value="{{rstate}}"/>
                 <input type="hidden" name="ref_code" value="{{request.GET.utm_campaign}}"/>
@@ -320,13 +320,14 @@
   }
 
   function show_form_error() {
-    $('.errors').removeClass("invisible");
+    // animate both so that the total motion is smooth
+    $('.errors').slideDown("invisible");
     smooth_scroll_to($('.errors'));
   }
 
   function do_submit() {
     // Validation.
-    $('.errors').text('').addClass("invisible"); // clear
+    $('.errors li').slideUp(function() { $(this).remove(); }); // smoothly clear
     if (!amount_validation() || !payment_validation()) {
       show_form_error();
       return null;

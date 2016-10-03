@@ -117,25 +117,30 @@ class ContributionFormView(View):
       return JsonResponse({ 'line_items': line_items })
 
     # Create a Contribution record & save to the database.
+    def get_nonempty_field(field_name, nice_name):
+      val = request.POST.get(field_name, "").strip()
+      if not val:
+        raise ValueError("Please enter something in the %s field." % nice_name)
+      return val
     try:
       contribution = Contribution.objects.create(
         campaign=self.campaign,
         contributor={
-          "email": validate_email(request.POST["email"])["email"], # validate & normalize
-          "nameFirst": request.POST["nameFirst"],
-          "nameLast": request.POST["nameLast"],
-          "phone": request.POST["phone"],
-          "address": request.POST["address"],
-          "city": request.POST["city"],
-          "state": request.POST["state"],
-          "zip": request.POST["zip"],
-          "occupation": request.POST["occupation"],
-          "employer": request.POST["employer"],
+          "email": validate_email(request.POST.get("email", ""))["email"], # validate & normalize
+          "nameFirst": get_nonempty_field("nameFirst", "first name"),
+          "nameLast": get_nonempty_field("nameLast", "last name"),
+          "phone": get_nonempty_field("phone", "phone number"),
+          "address": get_nonempty_field("address", "address"),
+          "city": get_nonempty_field("city", "city"),
+          "state": get_nonempty_field("state", "state"),
+          "zip": get_nonempty_field("zip", "ZIP code"),
+          "occupation": get_nonempty_field("occupation", "occupation"),
+          "employer": get_nonempty_field("employer", "employer"),
         },
         amount=amount,
-        cclastfour=request.POST["ccNum"][-4:],
+        cclastfour=get_nonempty_field("ccNum", "xxx")[-4:],
         recipients=line_items,
-        ref_code=request.POST["ref_code"],
+        ref_code=request.POST.get("ref_code", ""),
         extra={
           "http": { k: request.META.get(k) for k in ('REMOTE_ADDR', 'REQUEST_URI', 'HTTP_USER_AGENT') },
         }

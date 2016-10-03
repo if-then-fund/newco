@@ -178,7 +178,7 @@ class DummyDemocracyEngineAPIClient(object):
 				if not info.get(field, "").strip():
 					raise HumanReadableValidationError("Field is empty: %s" % field)
 
-			if info['cc_number'] != '4111111111111111':
+			if info['cc_number'].replace(" ", "") != '4111111111111111':
 				raise HumanReadableValidationError("Invalid credit card number.")
 			return {
 				"dummy_response": True,
