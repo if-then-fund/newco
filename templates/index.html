@@ -290,7 +290,7 @@
     data = collect_form_data();
     ajax_with_indicator({
       // disable/enable controls while AJAX is happening
-      controls: $('#contribution-form input, #contribution-form select, #contribution-form button'),
+      controls: $('input[name=amount]'),
 
       // request
       url: '{{request.path|escapejs}}',
