@@ -120,13 +120,23 @@ class ContributionFormView(View):
     def get_nonempty_field(field_name, nice_name):
       val = request.POST.get(field_name, "").strip()
       if not val:
-        raise ValueError("Please enter something in the %s field." % nice_name)
+        e = ValueError("Please enter something in the %s field." % nice_name)
+        e.field_name = field_name
+        raise e
       return val
+    def validate_email2(value):
+      try:
+        # Validate and return normalized address.
+        return validate_email(value)["email"]
+      except ValueError as e:
+        # Add field to exception object and re-raise.
+        e.field_name = "email"
+        raise e
     try:
       contribution = Contribution.objects.create(
         campaign=self.campaign,
         contributor={
-          "email": validate_email(request.POST.get("email", ""))["email"], # validate & normalize
+          "email": validate_email2(request.POST.get("email", "")),
           "nameFirst": get_nonempty_field("nameFirst", "first name"),
           "nameLast": get_nonempty_field("nameLast", "last name"),
           "phone": get_nonempty_field("phone", "phone number"),
@@ -146,7 +156,7 @@ class ContributionFormView(View):
         }
       )
     except ValueError as e:
-      return JsonResponse({'status': 'invalid', 'message': str(e)})
+      return JsonResponse({'status': 'invalid', 'message': str(e), 'field': getattr(e, 'field_name', None)})
 
     # Execute the transaction.
 

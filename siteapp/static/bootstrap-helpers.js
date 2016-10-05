@@ -119,6 +119,9 @@ function ajax_with_indicator(options) {
 }
 
 function smooth_scroll_to(elem) {
+  // Smoothly scroll to top of element if it is not visible.
+  if ($('body').scrollTop() < elem.offset().top)
+    return;
   $('html, body').animate({
       scrollTop: Math.max(elem.offset().top-50, 0)
   });

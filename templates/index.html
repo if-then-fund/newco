@@ -28,8 +28,11 @@
                 <input type="hidden" name="ref_code" value="{{request.GET.utm_campaign}}"/>
 
                 <div class="amount-wrapper">
-                    <input type="text" class="form-control mb-2 web-2 amount" placeholder="Amount"
-                      id="amount" name="amount" pattern="^\$? *([0-9]+(,[0-9]{3})*)?(\.[0-9]{0,2})?$" onchange="hide_contribution_details()" onkeypress="hide_contribution_details()">
+                  <div class="input-group amount mb-2 web-2">
+                    <div class="icon">$</div>
+                      <input type="text" class="form-control" placeholder="Amount"
+                        id="amount" name="amount" pattern="^\$? *([0-9]+(,[0-9]{3})*)?(\.[0-9]{0,2})?$" onchange="hide_contribution_details()" onkeypress="hide_contribution_details()">
+                    </div>
                     <span>({{max_contrib|currency}} max)</span>
                 </div>
                 <input type="text" class="form-control mb-2 web-2" placeholder="First"
@@ -83,7 +86,7 @@
     </div>
 
     <section id="line-items" class="contributions" style="display: none">
-        <table class="contributions-table">
+        <table class="contributions-table first">
             <tbody>
             {% for recip in recipients %}
               {% if forloop.counter0 == recipent_index_half_way %}
@@ -201,7 +204,7 @@
   function amount_validation() {
     var valid = true;
     if (get_amount() == null) {
-      add_form_error("Your contribution amount must be between {{min_contrib|currency}} and {{max_contrib|currency}}.");
+      add_form_error("amount", "Your contribution amount must be between {{min_contrib|currency}} and {{max_contrib|currency}}.");
       valid = false;
     }
     return valid;
@@ -210,14 +213,14 @@
   function payment_validation() {
     // validate card number
     if (!$.payment.validateCardNumber($('#ccNum').val())) {
-      add_form_error("Enter a valid credit card number.");
+      add_form_error("ccNum", "Enter a valid credit card number.");
       return false;
     }
 
     // validate card expiration
     var exp = $('#ccExp').payment('cardExpiryVal');
     if (!$.payment.validateCardExpiry(exp.month, exp.year)) {
-      add_form_error("Enter a valid expiration date.");
+      add_form_error("ccExp", "Enter a valid expiration date.");
       return false;
     }
 
@@ -226,7 +229,7 @@
 
     // validate card cvv
     if (!$.payment.validateCardCVC($('#ccCVV').val())) {
-      add_form_error("Enter your card verification code, often found on the back side of the card.");
+      add_form_error("ccCVV", "Enter your card verification code, often found on the back side of the card.");
       return false;
     }
 
@@ -321,21 +324,54 @@
   // for submission
 
   function clear_form_errors() {
-    // smoothly clear, but leave the .errors box because if there
-    // are no errors next time the page moves to the Thank You 
-    // state anyway (but see show_contribution_details).
-    $('.errors li').slideUp(function() { $(this).remove(); });
+    // smoothly clear
+    $('.errors li').slideUp(function() {
+      $(this).remove();
+      if ($('.errors li').length == 0)
+        $('.errors').slideUp();
+    });
+
+    // hide field error messages and turn off error class on the field
+    $('.error-message').remove(); // they are absolutely positioned so no need to animate
+    $('.error').removeClass('error');
   }
 
-  function add_form_error(text) {
-    // add an error bullet
-    $('.errors').append($("<li/>").text(text));
+  function add_form_error(field, text) {
+    if (!field) {
+      // This error is not specific toa field. Add an error bullet.
+      $('.errors').append($("<li/>").text(text));
+    } else {
+      // get the node that controls positioning and error state
+      var input = $('input[name=' + field + ']');
+      var control;
+      if (field == "amount")
+        control = $('.amount-wrapper .input-group');
+      else
+        control = input;
+      control.addClass("error");
+
+      // create a temporary DOM element for the error message
+      var node = $("<div class='error-message'/>");
+      var clientRect = control[0].getBoundingClientRect();
+      node.css({ position: "absolute", "top": document.body.scrollTop+clientRect.bottom, left: clientRect.left })
+      node.text(text);
+      $('body').append(node);
+
+      // set focus after a delay to allow control to smoothly come into view first
+      setTimeout(function() { input.focus(); }, 500);
+    }
   }
 
   function show_form_error() {
-    // animate both so that the total motion is smooth
-    $('.errors').slideDown("invisible");
-    smooth_scroll_to($('.errors'));
+    // Show .errors if any non-field-specific errors were generated.
+    if ($('.errors li').length > 0) {
+      // animate both so that the total motion is smooth
+      $('.errors').slideDown();
+      smooth_scroll_to($('.errors'));
+    } else {
+      // Ensure first field with error is visible on screen.
+      smooth_scroll_to($('.error'));
+    }
   }
 
   function do_submit() {
@@ -363,7 +399,7 @@
       // response
       success: function(res) {
         if (res.status == "invalid") {
-          add_form_error(res.message);
+          add_form_error(res.field, res.message);
           show_form_error();
         } else {
           $('.contributions').hide();
