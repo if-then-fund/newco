@@ -88,11 +88,11 @@ p {
   .primary-btn[disabled] {
     background-color: #3b759e; }
 
-.form-control {
+.form-control, .selectric {
   margin: 11px 0;
   height: 30px;
   background-color: white;
-  padding: 10px 8px;
+  padding: 2px 8px;
   border: 1px solid transparent;
   font-weight: bold;
   border-radius: 0;
@@ -122,27 +122,35 @@ p {
     text-align: center;
     height: 40px;
     line-height: 40px; }
-  .input-group .form-control {
+  .input-group .form-control, .input-group .selectric {
     width: calc(100% - 45px);
     margin: 0;
     border: none !important; }
 
 @media (min-width: 300px) {
-  .form-control {
+  .form-control, .selectric {
     font-size: 16px;
     line-height: 16px; }
-    .form-control::-webkit-input-placeholder {
+    .form-control::-webkit-input-placeholder, .selectric::-webkit-input-placeholder {
       font-size: 16px;
-      line-height: 16px; }
-    .form-control:-moz-placeholder {
+      line-height: 16px;
+      padding: 4px 0;
+      color: #A5A5A7; }
+    .form-control:-moz-placeholder, .selectric:-moz-placeholder {
       font-size: 16px;
-      line-height: 16px; }
-    .form-control::-moz-placeholder {
+      line-height: 16px;
+      padding: 4px 0;
+      color: #A5A5A7; }
+    .form-control::-moz-placeholder, .selectric::-moz-placeholder {
       font-size: 16px;
-      line-height: 16px; }
-    .form-control:-ms-input-placeholder {
+      line-height: 16px;
+      padding: 4px 0;
+      color: #A5A5A7; }
+    .form-control:-ms-input-placeholder, .selectric:-ms-input-placeholder {
       font-size: 16px;
-      line-height: 16px; }
+      line-height: 16px;
+      padding: 4px 0;
+      color: #A5A5A7; }
 
   .mb-1 {
     width: 100%; }
@@ -153,27 +161,27 @@ p {
   .input-group.amount .icon {
     height: 32px;
     line-height: 32px; }
-  .input-group.amount .form-control {
+  .input-group.amount .form-control, .input-group.amount .selectric {
     height: 32px; } }
 @media (min-width: 600px) and (orientation: portrait) {
   .error-message {
     font-size: 12px; }
 
-  .form-control {
+  .form-control, .selectric {
     margin: 14px 0;
     font-size: 16px;
     line-height: 13px;
     height: 39px; }
-    .form-control::-webkit-input-placeholder {
+    .form-control::-webkit-input-placeholder, .selectric::-webkit-input-placeholder {
       font-size: 14px;
       line-height: 14px; }
-    .form-control:-moz-placeholder {
+    .form-control:-moz-placeholder, .selectric:-moz-placeholder {
       font-size: 14px;
       line-height: 14px; }
-    .form-control::-moz-placeholder {
+    .form-control::-moz-placeholder, .selectric::-moz-placeholder {
       font-size: 14px;
       line-height: 14px; }
-    .form-control:-ms-input-placeholder {
+    .form-control:-ms-input-placeholder, .selectric:-ms-input-placeholder {
       font-size: 14px;
       line-height: 14px; }
 
@@ -192,41 +200,41 @@ p {
   .input-group.amount .icon {
     height: 40px;
     line-height: 40px; }
-  .input-group.amount .form-control {
+  .input-group.amount .form-control, .input-group.amount .selectric {
     height: 40px;
     font-size: 15px;
     line-height: 15px; }
-    .input-group.amount .form-control::-webkit-input-placeholder {
+    .input-group.amount .form-control::-webkit-input-placeholder, .input-group.amount .selectric::-webkit-input-placeholder {
       font-size: 15px;
       line-height: 15px; }
-    .input-group.amount .form-control:-moz-placeholder {
+    .input-group.amount .form-control:-moz-placeholder, .input-group.amount .selectric:-moz-placeholder {
       font-size: 15px;
       line-height: 15px; }
-    .input-group.amount .form-control::-moz-placeholder {
+    .input-group.amount .form-control::-moz-placeholder, .input-group.amount .selectric::-moz-placeholder {
       font-size: 15px;
       line-height: 15px; }
-    .input-group.amount .form-control:-ms-input-placeholder {
+    .input-group.amount .form-control:-ms-input-placeholder, .input-group.amount .selectric:-ms-input-placeholder {
       font-size: 15px;
       line-height: 15px; } }
 @media (min-width: 769px) {
   .error-message {
     font-size: 12px; }
 
-  .form-control {
+  .form-control, .selectric {
     margin: 14px 0;
     font-size: 16px;
     line-height: 13px;
     height: 39px; }
-    .form-control::-webkit-input-placeholder {
+    .form-control::-webkit-input-placeholder, .selectric::-webkit-input-placeholder {
       font-size: 14px;
       line-height: 14px; }
-    .form-control:-moz-placeholder {
+    .form-control:-moz-placeholder, .selectric:-moz-placeholder {
       font-size: 14px;
       line-height: 14px; }
-    .form-control::-moz-placeholder {
+    .form-control::-moz-placeholder, .selectric::-moz-placeholder {
       font-size: 14px;
       line-height: 14px; }
-    .form-control:-ms-input-placeholder {
+    .form-control:-ms-input-placeholder, .selectric:-ms-input-placeholder {
       font-size: 14px;
       line-height: 14px; }
 
@@ -245,20 +253,20 @@ p {
   .input-group.amount .icon {
     height: 40px;
     line-height: 40px; }
-  .input-group.amount .form-control {
+  .input-group.amount .form-control, .input-group.amount .selectric {
     height: 40px;
     font-size: 15px;
     line-height: 15px; }
-    .input-group.amount .form-control::-webkit-input-placeholder {
+    .input-group.amount .form-control::-webkit-input-placeholder, .input-group.amount .selectric::-webkit-input-placeholder {
       font-size: 15px;
       line-height: 15px; }
-    .input-group.amount .form-control:-moz-placeholder {
+    .input-group.amount .form-control:-moz-placeholder, .input-group.amount .selectric:-moz-placeholder {
       font-size: 15px;
       line-height: 15px; }
-    .input-group.amount .form-control::-moz-placeholder {
+    .input-group.amount .form-control::-moz-placeholder, .input-group.amount .selectric::-moz-placeholder {
       font-size: 15px;
       line-height: 15px; }
-    .input-group.amount .form-control:-ms-input-placeholder {
+    .input-group.amount .form-control:-ms-input-placeholder, .input-group.amount .selectric:-ms-input-placeholder {
       font-size: 15px;
       line-height: 15px; } }
 ul.errors {
@@ -386,6 +394,58 @@ i {
     -ms-transform: rotate(360deg);
     -webkit-transform: rotate(360deg);
     transform: rotate(360deg); } }
+.selectric-wrapper {
+  display: inline-block;
+  vertical-align: top; }
+  .selectric-wrapper.selectric-hover .selectric, .selectric-wrapper.selectric-focus .selectric {
+    border-color: white !important; }
+
+@media (min-width: 300px) {
+  .selectric-wrapper.selectric-mb-2 {
+    width: calc(50% - 3px); }
+  .selectric-wrapper select {
+    height: 30px !important; }
+  .selectric-wrapper .selectric .label {
+    font-size: 16px;
+    line-height: 16px;
+    padding: 4px 0;
+    height: 24px;
+    margin-left: 0; }
+  .selectric-wrapper .selectric .button {
+    height: 28px;
+    padding: 6px 0; } }
+@media (min-width: 600px) and (orientation: portrait) {
+  .selectric-wrapper.selectric-web-4 {
+    width: calc(25% - 3px); }
+  .selectric-wrapper select {
+    top: 8px; }
+  .selectric-wrapper .selectric .label {
+    font-size: 16px;
+    line-height: 16px;
+    padding: 9px 0 8px 0;
+    height: 33px;
+    margin-left: 0; }
+  .selectric-wrapper .selectric .button {
+    height: 33px;
+    padding: 9px 0 8px 0; }
+  .selectric-wrapper .selectric-items {
+    margin-top: -14px; } }
+@media (min-width: 769px) {
+  .selectric-wrapper.selectric-web-4 {
+    width: calc(25% - 3px); }
+  .selectric-wrapper select {
+    top: 8px; }
+  .selectric-wrapper .selectric .label {
+    font-size: 16px;
+    line-height: 16px;
+    padding: 9px 0 8px 0;
+    height: 33px;
+    margin-left: 0; }
+  .selectric-wrapper .selectric .button {
+    height: 33px;
+    padding: 9px 0 8px 0; }
+  .selectric-wrapper .selectric-items {
+    margin-top: -14px; } }
 .invisible {
   display: none; }
 

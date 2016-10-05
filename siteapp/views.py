@@ -374,8 +374,8 @@ def execute_contribution(contribution, cc_postdata):
 
     # billing details
     "cc_number": cc_postdata['ccNum'],
-    "cc_month": cc_postdata['ccExp'].split("/")[0],
-    "cc_year": cc_postdata['ccExp'].split("/")[1],
+    "cc_month": cc_postdata['ccExpMonth'],
+    "cc_year": cc_postdata['ccExpYear'],
     "cc_verification_value": cc_postdata['ccCVV'],
 
     # line items

@@ -11,8 +11,6 @@
   .primary-btn i { display: none; }
   .primary-btn[disabled] span { display: none; }
   .primary-btn[disabled] i { display: inline-block; }
-  select { color: #999; }
-  select.filled-in { color: black; }
 </style>
 {% endblock %}
 
@@ -47,7 +45,8 @@
                   name="address" required>
                 <input type="text" class="form-control mb-2 web-2" placeholder="City"
                   name="city" required>
-                <select class="form-control mb-2 web-2" name="state" onchange="$(this).toggleClass('filled-in', $(this).val() != '');">
+                <select class="form-control mb-2 web-2"
+                  name="state" onchange="onStateFieldChanged(this)">
                   <option value="">State</option>
                   <option>AL</option> <option>AK</option> <option>AS</option> <option>AZ</option> <option>AR</option> <option>CA</option> <option>CO</option> <option>CT</option> <option>DE</option> <option>DC</option> <option>FM</option> <option>FL</option> <option>GA</option> <option>GU</option> <option>HI</option> <option>ID</option> <option>IL</option> <option>IN</option> <option>IA</option> <option>KS</option> <option>KY</option> <option>LA</option> <option>ME</option> <option>MH</option> <option>MD</option> <option>MA</option> <option>MI</option> <option>MN</option> <option>MS</option> <option>MO</option> <option>MT</option> <option>NE</option> <option>NV</option> <option>NH</option> <option>NJ</option> <option>NM</option> <option>NY</option> <option>NC</option> <option>ND</option> <option>MP</option> <option>OH</option> <option>OK</option> <option>OR</option> <option>PW</option> <option>PA</option> <option>PR</option> <option>RI</option> <option>SC</option> <option>SD</option> <option>TN</option> <option>TX</option> <option>UT</option> <option>VT</option> <option>VI</option> <option>VA</option> <option>WA</option> <option>WV</option> <option>WI</option> <option>WY</option> <option>AE</option> <option>AP</option> <option>AA</option>
                 </select>
@@ -61,8 +60,14 @@
                   id="ccNum" name="ccNum" autocomplete="cc-number" required>
                 <input type="text" class="form-control mb-1 web-2" placeholder="123"
                   id="ccCVV" name="ccCVV" required autocomplete="off">
-                <input type="text" class="form-control mb-2 web-4" placeholder="1/19"
-                  id="ccExp" name="ccExp" required>
+                <select class="form-control mb-2 web-4"
+                  name="ccExpMonth">
+                  <option value="1">January</option> <option value="2">February</option> <option value="3">March</option> <option value="4">April</option> <option value="5">May</option> <option value="6">June</option> <option value="7">July</option> <option value="8">August</option> <option value="9">September</option> <option value="10">October</option> <option value="11">November</option> <option value="12">December</option>
+                </select>
+                <select class="form-control mb-2 web-4"
+                  name="ccExpYear">
+                  <option>2016</option> <option>2017</option> <option>2018</option> <option>2019</option> <option>2020</option> <option>2021</option> <option>2022</option> <option>2023</option> <option>2024</option> <option>2025</option> <option>2026</option> <option>2027</option> <option>2028</option> <option>2029</option> <option>2030</option> <option>2031</option> <option>2032</option> <option>2033</option> <option>2034</option> <option>2035</option> <option>2036</option>
+                </select>
 
                 <p class="subtext">By clicking submit, I confirm that the following statements are true and accurate:</p>
                 <ul>
@@ -129,14 +134,26 @@
 
 {% block scripts %}
   <script src="{% static "vendor/jquery.payment.js" %}"> </script>
+  <script src="{% static "vendor/jquery.selectric.min.js" %}"> </script>
   <script src="{% static "vendor/mailcheck.min.js" %}"> </script>
 
   <script>
   $(function() {
-    // Initialize field validation.
+    // Prettify selects.
+    $('select').selectric({
+      disableOnMobile: false,
+      onInit: function() {
+          if (this.name == 'state') {
+              $('.selectric .label:contains("State")').css( "color", "#A5A5A7" );
+          }
+      }
+    });
+
+    // Initialize field validation and default CC exp month to this month.
     $('#ccNum').payment('formatCardNumber');
-    $('#ccExp').payment('formatCardExpiry');
     $('#ccCVV').payment('formatCardCVC');
+    $('select[name=ccExpMonth]').prop('selectedIndex', new Date().getMonth()).selectric('refresh');
+    $('select[name=ccExpYear]').selectric('refresh');
 
     $('input[name=email]').on('blur', function() {
       $('input[name=email]').mailcheck({
@@ -159,12 +176,13 @@
       $('input[name=phone]').val('{{random_user_info.phone|escapejs}}')
       $('input[name=address]').val('{{random_user_info.address|escapejs}}')
       $('input[name=city]').val('{{random_user_info.city|escapejs}}')
-      $('input[name=state]').val('{{random_user_info.state|escapejs}}')
+      $('select[name=state]').val('{{random_user_info.state|escapejs}}')
       $('input[name=zip]').val('{{random_user_info.zip|escapejs}}')
       $('input[name=occupation]').val('{{random_user_info.occupation|escapejs}}')
       $('input[name=employer]').val('{{random_user_info.employer|escapejs}}')
       $('#ccNum').val('4111111111111111')
-      $('#ccExp').val('1/2020')
+      $('select[name=ccExpMonth]').val('2')
+      $('select[name=ccExpYear]').val('2020')
       $('#ccCVV').val('000')
     }
   })
@@ -217,16 +235,6 @@
       return false;
     }
 
-    // validate card expiration
-    var exp = $('#ccExp').payment('cardExpiryVal');
-    if (!$.payment.validateCardExpiry(exp.month, exp.year)) {
-      add_form_error("ccExp", "Enter a valid expiration date.");
-      return false;
-    }
-
-    // overwrite field with normalized value -- the backend splits on the slash
-    $('#ccExp').val(exp.month + "/" + exp.year);
-
     // validate card cvv
     if (!$.payment.validateCardCVC($('#ccCVV').val())) {
       add_form_error("ccCVV", "Enter your card verification code, often found on the back side of the card.");
@@ -234,6 +242,15 @@
     }
 
     return true;
+  }
+
+  function onStateFieldChanged(self) {
+    var node = $(self).parents('.selectric-wrapper').find('.selectric .label');
+    if (!self.value) {
+        node.css( "color", "#A5A5A7" );
+    } else {
+        node.css( "color", "black" );
+    }
   }
 
   function collect_form_data() {
@@ -342,10 +359,12 @@
       $('.errors').append($("<li/>").text(text));
     } else {
       // get the node that controls positioning and error state
-      var input = $('input[name=' + field + ']');
+      var input = $('input[name=' + field + '], select[name=' + field + ']');
       var control;
       if (field == "amount")
         control = $('.amount-wrapper .input-group');
+      else if (field == "state")
+        control = input.parents(".selectric-wrapper").find(".selectric");
       else
         control = input;
       control.addClass("error");
