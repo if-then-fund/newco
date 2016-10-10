@@ -76,6 +76,9 @@ function ajax_with_indicator(options) {
   options.success = function(data) {
     var is_error = (data.status == "error");
 
+    if (window.mixpanel && is_error)
+      mixpanel.track("ajax error", { "error": data.message });
+
     hide_loading_indicator(!is_error);
     disable_enable_controls(false);
 
@@ -88,6 +91,9 @@ function ajax_with_indicator(options) {
   };
 
   options.error = function(jqxhr) {
+    if (window.mixpanel)
+      mixpanel.track("ajax error", { "error": jqxhr.responseText });
+
     hide_loading_indicator(false);
     disable_enable_controls(false);
 

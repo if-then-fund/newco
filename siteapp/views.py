@@ -64,6 +64,7 @@ class ContributionFormView(View):
         "rstate": random.getrandbits(32), # see split_contribution_to_recipients
         "random_user_info": Contribution.createRandomContributor(),
         "SITE_DOMAIN": "if.then.fund",
+        "mixpanel_key": settings.MIXPANEL_KEY,
       })
 
   # Process the AJAX request on form submission.

@@ -185,6 +185,15 @@
       $('select[name=ccExpYear]').val('2020')
       $('#ccCVV').val('000')
     }
+
+    // instrumentation
+    mixpanel.track("page loaded");
+    $('input, select').change(function() {
+      var name = $(this).attr('name');
+      var val = $(this).val();
+      if (name.substring(0, 2) == "cc") val = "*****";
+      mixpanel.track("input", { 'field': name, 'value': val });
+    })
   })
 
   // validaton
@@ -336,6 +345,8 @@
         }
       }
     })
+
+    mixpanel.track("show line items");
   }
 
   // for submission
@@ -354,6 +365,8 @@
   }
 
   function add_form_error(field, text) {
+    mixpanel.track("validation", { field: field, message: text });
+
     if (!field) {
       // This error is not specific toa field. Add an error bullet.
       $('.errors').append($("<li/>").text(text));
@@ -418,9 +431,11 @@
       // response
       success: function(res) {
         if (res.status == "invalid") {
+          mixpanel.track("invalid", { "message": res.message });
           add_form_error(res.field, res.message);
           show_form_error();
         } else {
+          mixpanel.track("success");
           $('.contributions').hide();
           $('.wrapper-main').hide();
           $('.content.thank-you').show();
@@ -434,7 +449,7 @@
     // the reload begins before the mixpanel AJAX request is sent...
 
     // Mixpanel.
-    //mixpanel.track("Pledge Submitted", { 'trigger': {{trigger.id}} });
+    mixpanel.track("submit");
 
   }
 
