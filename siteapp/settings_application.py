@@ -5,3 +5,6 @@ INSTALLED_APPS += [
 ]
 
 DE_API = environment.get('democracyengine')
+
+SERVER_EMAIL = 'newdems error <errors@mail.if.then.fund>'
+

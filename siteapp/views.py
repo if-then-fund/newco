@@ -404,3 +404,5 @@ def execute_contribution(contribution, cc_postdata):
   contribution.transaction = resp
   contribution.save(update_fields=['transaction'])
 
+def test_error_email(request):
+  raise ValueError("This view just sends an error email to the admins.")
