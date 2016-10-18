@@ -33,6 +33,11 @@ class Command(BaseCommand):
 			# reconcile these. We don't do this on this site.
 			return
 
+		if don["line_items"] and don["line_items"][0]["status"] == "authorization_failed":
+			# The transaction failed. We deleted the corresponding Contribution entry since
+			# we showed the user the error.
+			return
+
 		# This is an actual transaction.
 
 		# Sanity checks.
