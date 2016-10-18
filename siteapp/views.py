@@ -384,7 +384,7 @@ def execute_contribution(contribution, cc_postdata):
     "cc_zip": contribution.contributor['zip'],
 
     # billing details
-    "cc_number": cc_postdata['ccNum'],
+    "cc_number": cc_postdata['ccNum'].replace(" ", ""),
     "cc_month": cc_postdata['ccExpMonth'],
     "cc_year": cc_postdata['ccExpYear'],
     "cc_verification_value": cc_postdata['ccCVV'],
