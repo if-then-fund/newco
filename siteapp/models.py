@@ -204,8 +204,9 @@ class Contribution(models.Model):
           continue
 
     # Store result.
-    self.extra['void'] = voids
-    self.save(update_fields=["extra"])
+    if len(voids) > 0:
+      self.extra['void'] = voids
+      self.save(update_fields=["extra"])
 
     if successful:
       self.decrement()
