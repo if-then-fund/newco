@@ -7,7 +7,7 @@
 
 set -euo pipefail # "strict mode"
 
-DOMAIN=newdems-demo.ifthenfund.com
+DOMAIN=newdems.ifthenfund.com
 
 # THE SYSTEM
 ############
@@ -23,8 +23,11 @@ sudo apt-get install -y \
 	unzip \
 	python3 python-virtualenv python3-pip \
 	python3-yaml \
-	nginx uwsgi-plugin-python3 supervisor \
+	nginx uwsgi-plugin-python3 supervisor python3-psycopg2 postgresql-client-common postgresql-client-9.5 \
 	memcached
+
+# Get AWS RDS Postgres TLS cert.
+sudo wget -O /etc/ssl/certs/rds-ssl-ca-cert.pem http://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem
 
 # Turn off nginx's default website.
 sudo rm -f /etc/nginx/sites-enabled/default
@@ -53,7 +56,7 @@ sudo service nginx restart
 mkdir -p /home/ubuntu/public_html # make with non-root ownership
 cat > /tmp/cronjob <<EOF;
 free_tls_certificate $DOMAIN /etc/ssl/local/ssl_certificate.key /etc/ssl/local/ssl_certificate.crt /home/ubuntu/public_html /home/ubuntu/acme-le-account \
-	&& sudo service nginx restart
+	&& service nginx restart
 EOF
 chmod +x /tmp/cronjob
 sudo mv /tmp/cronjob /etc/cron.daily/letsencrypt
