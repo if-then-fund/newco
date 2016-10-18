@@ -313,23 +313,33 @@ def split_contribution_to_recipients(recipients, amount, random_seed):
   if len(fixed_line_items) == 0:
     # Each recipient got a certain number of cents, with rounding down. That
     # often leaves some cents remaining. Distribute those cents randomly to
-    # any recipients that can take it. But seed the random number generator
+    # any recipients that can take it.
+
+    # Shuffle the recipients that can take some extra pennies. Seed the PRNG
     # with the given value so that the distribution is stable across calls,
     # so that whatever we show the user as a preview is what sticks at
     # submission.
     random.seed(random_seed)
-    remaining_amount = amount - sum(line_item[1] for line_item in free_line_items)
+    dist_recipients = list(range(len(free_line_items)))
+    random.shuffle(dist_recipients)
+
     # For each cent that needs to be put somewhere...
-    for i in range(int(remaining_amount*100)):
-      # Which recipients have room for another cent?
-      dist_recipients = [i for i, line_item in enumerate(free_line_items)
-        if get_recipient_limit(line_item[0]) > line_item[1]]
-      if len(dist_recipients) == 0:
-        # Everyone is at limits now -- can't distribute any more.
+    remaining_amount = amount - sum(line_item[1] for line_item in free_line_items)
+    rnext = 0
+    for _ in range(int(remaining_amount*100)):
+      # Who is the next recipient with room for an extra penny?
+      for i in range(len(dist_recipients)):
+        line_item_index = dist_recipients[(rnext + i) % len(dist_recipients)]
+        if get_recipient_limit(free_line_items[line_item_index][0]) > free_line_items[line_item_index][1]:
+          # Has room for a penny.
+          break
+      else:
+        # No one has room for a penny. Can't distribute any more.
         break
-      # Pick a random line item and increment it by one cent.
-      line_item_index = random.choice(dist_recipients)
+
+      # Add a penny to this recipient and advance to the next recipient for the next iteration.
       free_line_items[line_item_index] = (free_line_items[line_item_index][0], free_line_items[line_item_index][1]+Decimal("0.01"))
+      rnext += 1
 
     return free_line_items
 
