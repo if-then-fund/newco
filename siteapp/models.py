@@ -158,7 +158,7 @@ class Contribution(models.Model):
       try:
         txn = DemocracyEngineAPI.get_transaction(txn_guid)
       except Exception as e:
-        output.append((txn, "Error: " + str(e)))
+        output.append((txn_guid, "Error: " + str(e)))
         continue
 
       # Validate.
