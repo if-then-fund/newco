@@ -125,11 +125,13 @@ class Contribution(models.Model):
     if self.transaction:
       # ContributionFormView deletes Contribution instances that fail at the payment stage.
       raise Exception("Cannot delete a Contribution that has been processed.")
+    self.decrement()
+    super(Contribution, self).delete()  
+
+  def decrement(self):
     self.campaign.total_contributors = models.F('total_contributors') - 1
     self.campaign.total_contributions = models.F('total_contributions') - self.amount
     self.campaign.save(update_fields=['total_contributors', 'total_contributions'])
-    super(Contribution, self).delete()  
-
 
   def void(self):
     # A user has asked us to void a transaction.
@@ -149,6 +151,7 @@ class Contribution(models.Model):
     output = []
     voids = []
     txns = set(item['transaction_guid'] for item in self.transaction['line_items'])
+    successful = False
     for txn_guid in txns:
       # This raises a 404 exception if the transaction info is not
       # yet available.
@@ -178,6 +181,7 @@ class Contribution(models.Model):
         DemocracyEngineAPI.void_transaction(txn_guid)
         output.append((txn_guid, "Voided."))
         ret["method"] = "void"
+        successful = True
       except HumanReadableValidationError as e:
         # Void failed.
 
@@ -193,6 +197,7 @@ class Contribution(models.Model):
           DemocracyEngineAPI.credit_transaction(txn_guid)
           output.append((txn_guid, "Credited."))
           ret["method"] = "credit"
+          successful = True
         except Exception as e1:
           ret["credit_error"] = str(e1)
           output.append((txn_guid, str(e) + "/" + str(e1)))
@@ -201,6 +206,9 @@ class Contribution(models.Model):
     # Store result.
     self.extra['void'] = voids
     self.save(update_fields=["extra"])
+
+    if successful:
+      self.decrement()
 
     # Return status info.
     return "\n".join((ret[0] + ": " + ret[1]) for ret in output)
