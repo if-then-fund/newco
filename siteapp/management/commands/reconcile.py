@@ -83,6 +83,7 @@ class Command(BaseCommand):
 		# Check recipients.
 		recips = { r[0]["de_recipient_id"]: parse_decimal(r[1]) for r in c.recipients }
 		for line_item in don["line_items"]:
+			# Amounts line up?
 			actual = parse_decimal(line_item["amount"].replace("$", ""))
 			expected = recips.get(line_item["recipient_id"], Decimal(0))
 			if actual != expected:
@@ -95,6 +96,23 @@ class Command(BaseCommand):
 		for r, expected in recips.items():
 			print(don["donation_id"], "/", c.id, "has recipient mismatch %s got %s instead of %s"
 				% (r, Decimal(0), expected))
+
+		# Check transaction info on the first line item.
+		line_item = don["line_items"][0]
+
+		# Any transaction error?
+		if line_item["transaction_error"]:
+			print(don["donation_id"], "/", c.id, "has a transaction error:", line_item["transaction_error"])
+
+		# Void/credit status.
+		if line_item["status"] == "captured":
+			if c.extra and c.extra.get("void"):
+				print(don["donation_id"], "/", c.id, "has status %s but should be voided/credited." % line_item["status"])
+		elif line_item["status"] in ("voided", "credited"):
+			if not (c.extra and c.extra.get("void")):
+				print(don["donation_id"], "/", c.id, "has unexpected status %s." % line_item["status"])
+		else:
+			print(don["donation_id"], "/", c.id, "has unexpected status %s." % line_item["status"])
 
 def parse_decimal(s):
 	# Parse and round to cents, because conversion from floats is inexact.

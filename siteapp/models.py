@@ -1,4 +1,5 @@
 from django.db import models, transaction
+from django.utils.timezone import now
 
 from jsonfield import JSONField
 
@@ -121,10 +122,86 @@ class Contribution(models.Model):
       self.campaign.save(update_fields=['total_contributors', 'total_contributions'])
 
   def delete(self):
+    raise Exception("Cannot delete a Contribution because it is processed.")
     self.campaign.total_contributors = models.F('total_contributors') - 1
     self.campaign.total_contributions = models.F('total_contributions') - self.amount
     self.campaign.save(update_fields=['total_contributors', 'total_contributions'])
     super(Contribution, self).delete()  
+
+
+  def void(self):
+    # A user has asked us to void a transaction.
+
+    from .views import DemocracyEngineAPI
+    from .de import HumanReadableValidationError
+
+    if not self.extra: self.extra = { }
+
+    # Is there anything to void?
+    if self.extra.get("void"):
+      raise ValueError("Contribution has already been voided.")
+    
+    # Void or refund the transaction. There should be only one, but
+    # just in case get a list of all mentioned transactions for the
+    # donation.
+    output = []
+    voids = []
+    txns = set(item['transaction_guid'] for item in self.transaction['line_items'])
+    for txn_guid in txns:
+      # This raises a 404 exception if the transaction info is not
+      # yet available.
+      try:
+        txn = DemocracyEngineAPI.get_transaction(txn_guid)
+      except Exception as e:
+        output.append((txn, "Error: " + str(e)))
+        continue
+
+      # Validate.
+      if txn['status'] in ("voided", "credited"):
+        output.append((txn_guid, "status is already " + txn['status']))
+        continue
+      if txn['status'] not in ("authorized", "captured"):
+        output.append((txn_guid, "Not sure what to do with a transaction with status %s." % txn['status']))
+        continue
+
+      # Prepare some return status information.
+      ret = {
+        "txn": txn,
+        "timestamp": now().isoformat(),
+      }
+      voids.append(ret)
+
+      # Attempt void.
+      try:
+        DemocracyEngineAPI.void_transaction(txn_guid)
+        output.append((txn_guid, "Voided."))
+        ret["method"] = "void"
+      except HumanReadableValidationError as e:
+        # Void failed.
+
+        # The transaction exists but is not captured yet, so
+        # we can't do anything.
+        if str(e) == "please wait until the transaction has captured before voiding or crediting":
+          output.append((txn_guid, str(e)))
+          continue
+
+        # Try credit.
+        ret["void_error"] = str(e)
+        try:
+          DemocracyEngineAPI.credit_transaction(txn_guid)
+          output.append((txn_guid, "Credited."))
+          ret["method"] = "credit"
+        except Exception as e1:
+          ret["credit_error"] = str(e1)
+          output.append((txn_guid, str(e) + "/" + str(e1)))
+          continue
+
+    # Store result.
+    self.extra['void'] = voids
+    self.save(update_fields=["extra"])
+
+    # Return status info.
+    return "\n".join((ret[0] + ": " + ret[1]) for ret in output)
 
   # STATIC
 

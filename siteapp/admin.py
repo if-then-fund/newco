@@ -21,4 +21,24 @@ class ContributionAdmin(admin.ModelAdmin):
 	raw_id_fields = ['campaign']
 	search_fields = ['cclastfour']
 
+	# remove the Delete action?, add our void action
+	actions = ['void']
+	def void(modeladmin, request, queryset):
+		# Void selected pledge executions. Collect return
+		# values and exceptions.
+		voids = []
+		for c in queryset:
+			try:
+				voids.append([c.id, c.void()])
+			except Exception as e:
+				voids.append([c.id, str(e)])
+		return json_response(voids)
+
 admin.site.register(Contribution, ContributionAdmin)
+
+def json_response(data):
+	import json
+	from django.http import HttpResponse
+	response = HttpResponse(content_type="application/json")
+	json.dump(data, response)
+	return response
