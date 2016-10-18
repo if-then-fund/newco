@@ -61,6 +61,7 @@ class Command(BaseCommand):
 		c = Contribution.objects.filter(id=contribution_id).first()
 		if not c:
 			print(don["donation_id"], "has invalid contribution ID")
+			print(don)
 			return
 
 		# Remember that we've checked this Contribution.
