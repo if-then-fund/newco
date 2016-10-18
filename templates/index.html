@@ -177,6 +177,7 @@
       $('input[name=address]').val('{{random_user_info.address|escapejs}}')
       $('input[name=city]').val('{{random_user_info.city|escapejs}}')
       $('select[name=state]').val('{{random_user_info.state|escapejs}}')
+        $('select[name=state]').selectric('refresh'); // get it to see the value change
       $('input[name=zip]').val('{{random_user_info.zip|escapejs}}')
       $('input[name=occupation]').val('{{random_user_info.occupation|escapejs}}')
       $('input[name=employer]').val('{{random_user_info.employer|escapejs}}')
