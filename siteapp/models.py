@@ -122,7 +122,9 @@ class Contribution(models.Model):
       self.campaign.save(update_fields=['total_contributors', 'total_contributions'])
 
   def delete(self):
-    raise Exception("Cannot delete a Contribution because it is processed.")
+    if self.transaction:
+      # ContributionFormView deletes Contribution instances that fail at the payment stage.
+      raise Exception("Cannot delete a Contribution that has been processed.")
     self.campaign.total_contributors = models.F('total_contributors') - 1
     self.campaign.total_contributions = models.F('total_contributions') - self.amount
     self.campaign.save(update_fields=['total_contributors', 'total_contributions'])
