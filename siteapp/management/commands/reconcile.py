@@ -23,7 +23,7 @@ class Command(BaseCommand):
 			self.process_de_donation(don, seen_contributions)
 
 		# Anything missing from Democray Engine?
-		first_contrib_id = min(seen_contributions)
+		first_contrib_id = min(seen_contributions) if (len(seen_contributions) > 0) else 0
 		for c in Contribution.objects.filter(id__gt=first_contrib_id).exclude(id__in=seen_contributions):
 			print("Contribution", c.id, "has no donation record on Democracy Engine.")
 
