@@ -28,7 +28,7 @@ class ContributionAdmin(admin.ModelAdmin):
 			return obj.amount
 
 	# remove the Delete action?, add our void action
-	actions = ['void']
+	actions = ['void', 'send_receipt']
 	def void(modeladmin, request, queryset):
 		# Void selected pledge executions. Collect return
 		# values and exceptions.
@@ -39,6 +39,17 @@ class ContributionAdmin(admin.ModelAdmin):
 			except Exception as e:
 				voids.append([c.id, str(e)])
 		return json_response(voids)
+
+	def send_receipt(modeladmin, request, queryset):
+		from .views import send_receipt as do_send_receipt
+		response = []
+		for c in queryset:
+			try:
+				response.append( (c.id, do_send_receipt(c)) )
+			except Exception as e:
+				response.append( (c.id, str(e)) )
+		return json_response(response)
+
 
 admin.site.register(Contribution, ContributionAdmin)
 

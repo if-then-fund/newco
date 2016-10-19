@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.views import View
 from django.conf import settings
+from django.utils.timezone import now
 
 from .models import alg, Campaign, Contribution
 from .templatetags.site_utils import currency
@@ -163,15 +164,17 @@ class ContributionFormView(View):
 
     try:
       execute_contribution(contribution, request.POST)
+    
     except HumanReadableValidationError as e:
       # Credit card or other validation failed. Since we can
       # tell the user what happened, we can delete the Contribution
       # record.
       contribution.delete()
       return JsonResponse({'status': 'invalid', 'message': str(e)})
+    
     except Exception as e:
       # Other errors are unreportable. We'll pretend it went fine
-      # and will sort this out later.
+      # and will sort this out later. But we won't send a receipt.
       contribution.transaction = {
         "error": {
           "message": str(e),
@@ -179,6 +182,15 @@ class ContributionFormView(View):
         }
       }
       contribution.save(update_fields=['transaction'])
+    
+    else:
+      # No problems. Send a receipt.
+      try:
+        send_receipt(contribution)
+      except Exception as e:
+        # Catch all exceptions - just record that one ocurred.
+        contribution.extra["error_sending_receipt"] = str(e)
+        contribution.save(update_fields=['extra'])
 
     # Return OK - the client will redirect to the thanks page.
 
@@ -413,6 +425,39 @@ def execute_contribution(contribution, cc_postdata):
 
   contribution.transaction = resp
   contribution.save(update_fields=['transaction'])
+
+def send_receipt(contribution):
+  if contribution.receipt_sent_at:
+    # Already sent.
+    return "Already sent."
+
+  # Construct email.
+  from django.template import Template, Context
+  body = Template(contribution.campaign.receipt_template)
+  body = body.render(Context({
+    "contributor": contribution.contributor,
+    "recipients": contribution.recipients,
+    "amount": contribution.amount,
+    "transaction_id": str(contribution.id) + "/" + contribution.transaction.get("line_items", [{}])[0].get("transaction_guid", "0"),
+  }))
+
+  # Send email.
+  from django.core.mail import EmailMessage
+  from django.conf import settings
+  msg = EmailMessage(
+      contribution.campaign.receipt_subject,
+      body,
+      '%s <%s>' % (contribution.campaign.receipt_sender, settings.RECEIPT_FROM_EMAIL),
+      [contribution.contributor["email"]],
+      bcc=[settings.RECEIPT_REPLY_TO],
+      reply_to=[settings.RECEIPT_REPLY_TO]
+  )
+  msg.send(fail_silently=False)
+
+  # Update database.
+  contribution.receipt_sent_at = now()
+  contribution.save(update_fields=['receipt_sent_at'])
+  return "Sent."
 
 def test_error_email(request):
   raise ValueError("This view just sends an error email to the admins.")

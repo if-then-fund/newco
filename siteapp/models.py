@@ -52,6 +52,11 @@ class Campaign(models.Model):
   # Recipients.
   recipients = JSONField(default=[], blank=True, help_text="A list of contribution recipients.")
 
+  # Receipt.
+  receipt_sender = models.CharField(max_length=128, help_text="The receipt email From: display name (not email).")
+  receipt_subject = models.CharField(max_length=128, help_text="The receipt email Subject: header.")
+  receipt_template = models.TextField(help_text="Receipt email body text (plain text), as a Django template.")
+
   # Totals.
   total_contributors = models.IntegerField(default=0, help_text="A running total of the number of individuals who made a contribution through this Campaign.")
   total_contributions = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text="A running total of contributions made through this Campaign.")
@@ -91,6 +96,7 @@ class Contribution(models.Model):
   # Execution
   recipients = JSONField(help_text="A list of contribution recipients and the amount each recipient is receiving.")
   transaction = JSONField(blank=True, help_text="The Democracy Engine transaction record.")
+  receipt_sent_at = models.DateTimeField(blank=True, null=True, help_text="If set, the datetime when a receipt email was sent to the contributor. If empty, the email has not yet been sent.")
 
   # Meta.
   ref_code = models.CharField(max_length=24, blank=True, null=True, db_index=True, help_text="An optional referral code that lead the user to take this action, e.g. from a utm_campaign query string argument.")
