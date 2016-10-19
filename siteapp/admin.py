@@ -17,9 +17,15 @@ class CampaignAdmin(admin.ModelAdmin):
 admin.site.register(Campaign, CampaignAdmin)
 
 class ContributionAdmin(admin.ModelAdmin):
-	list_display = ['id', 'campaign', 'contributor_summary', 'amount', 'ref_code', 'created']
+	list_display = ['id', 'campaign', 'contributor_summary', 'amount_', 'ref_code', 'created']
 	raw_id_fields = ['campaign']
 	search_fields = ['cclastfour']
+
+	def amount_(self, obj):
+		if obj.extra and obj.extra.get("void"):
+			return "voided"
+		else:
+			return obj.amount
 
 	# remove the Delete action?, add our void action
 	actions = ['void']
