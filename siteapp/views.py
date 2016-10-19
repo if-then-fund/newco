@@ -229,9 +229,8 @@ def contribution_limits_for_display(min_contrib, max_contrib):
 
   from math import log
 
-  # Try rounding the minimum up to the nearest number that is 1 and
-  # a bunch of zeros.
-  x = Decimal("10") ** int(log(min_contrib)/log(10)+1)
+  # Try rounding the minimum up to the nearest dollar.
+  x = min_contrib.quantize(Decimal('1'), rounding=ROUND_UP)
   if x < max_contrib/50:
     min_contrib = x
 
