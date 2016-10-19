@@ -17,15 +17,22 @@ class CampaignAdmin(admin.ModelAdmin):
 admin.site.register(Campaign, CampaignAdmin)
 
 class ContributionAdmin(admin.ModelAdmin):
-	list_display = ['id', 'campaign', 'contributor_summary', 'amount_', 'ref_code', 'created']
+	list_display = ['id', 'campaign', 'contributor_summary', 'amount', 'ref_code', 'status', 'created']
 	raw_id_fields = ['campaign']
 	search_fields = ['cclastfour']
 
-	def amount_(self, obj):
+	def status(self, obj):
+		status = []
+		if not obj.transaction:
+			status.append("no transaction")
+		elif obj.transaction.get("error"):
+			status.append("ERROR")
 		if obj.extra and obj.extra.get("void"):
-			return "voided"
-		else:
-			return obj.amount
+			status.append( "/".join(v.get("method") or "ERROR" for v in obj.extra["void"]) )
+		if obj.extra and obj.extra.get("error_sending_receipt"):
+			status.append("receipt email error")
+		if len(status) == 0: status.append("ok")
+		return ", ".join(status)
 
 	# remove the Delete action?, add our void action
 	actions = ['void', 'send_receipt']
