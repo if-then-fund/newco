@@ -162,10 +162,7 @@ class Contribution(models.Model):
         continue
 
       # Validate.
-      if txn['status'] in ("voided", "credited"):
-        output.append((txn_guid, "status is already " + txn['status']))
-        continue
-      if txn['status'] not in ("authorized", "captured"):
+      if txn['status'] not in ("authorized", "captured", "voided", "credited"):
         output.append((txn_guid, "Not sure what to do with a transaction with status %s." % txn['status']))
         continue
 
@@ -175,6 +172,12 @@ class Contribution(models.Model):
         "timestamp": now().isoformat(),
       }
       voids.append(ret)
+
+      if txn['status'] in ("voided", "credited"):
+        ret["method"] = "reconciled"
+        successful = True
+        output.append((txn_guid, "OK. Status on Democracy Engine is already %s." % txn['status']))
+        continue
 
       # Attempt void.
       try:
